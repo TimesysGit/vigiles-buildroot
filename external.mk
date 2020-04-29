@@ -58,4 +58,4 @@ vigiles-check:
 		$(vigiles-opts)		\
 	)
 
-target-finalize: vigiles-check
+vigiles-check: target-finalize
