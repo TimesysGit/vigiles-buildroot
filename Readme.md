@@ -90,3 +90,111 @@ wc -l ts-output/vigiles/buildroot-imx8mpico-manifest.json
 > This file may optionally be manually uploaded to Vigiles to generate a new CVE report.
 > Click on Buildroot under “Upload manifest” on the Vigiles Dashboard page to do the same.
 
+
+
+Configuration
+=============
+
+If included, Timesys Vigiles will be enabled by default with the Kconfig option
+**```BR2_EXTERNAL_TIMESYS_VIGILES```**. In addition, there are other configuration
+options available to control the behavior of the subsystem.
+
+> **Note About Pathnames**
+>
+> Pathnames that are specified follow the same semantics as throughout the
+> Buildroot build system
+> * Non-absolute paths are relative to the top of the Buildroot source.
+>
+> * Variables from both the shell and make environments are accessible using
+> 'make' syntax; e.g. *```$(HOME)```, ```$(BUILD_DIR)```, ```$(TOPDIR)```*
+>
+> * Shell expansion is not available; i.e. *```~/```* will not reference
+> a user's home directory. Use *```$(HOME)/```* instead.
+
+### Base Configuration
+
+Using ```make menuconfig```, the Vigiles configuration menu can be found under
+**```External Options```**.
+
+```
+External options  ---> 
+	*** Timesys Vigiles CVE Checker (in /home/mochel/projects/buildroot/vigiles) ***
+	[*] Enable Timesys Vigiles CVE Check  --->
+```
+
+### Reporting and Filtering
+
+Linux Kernel and U-Boot .config filtering can be enabled/disabled using the options
+**```VIGILES_ENABLE_KERNEL_CONFIG```** and **```VIGILES_ENABLE_UBOOT_CONFIG```**.
+
+If using a custom location for either the Kernel or U-Boot .config files, the
+paths can be specified using **```BR2_EXTERNAL_VIGILES_KERNEL_CONFIG```** and
+**```BR2_EXTERNAL_VIGILES_UBOOT_CONFIG```**.
+
+The default for both paths is _```auto```_. It is recommended that this value
+is used unless it is absolutely necessary to specify an alternative path.
+
+```
+              *** Vigiles Kernel CVE Reporting Options ***
+        [*]   Enable Linux Kernel .config Filtering
+        (auto)  Location of Linux Kernel .config file
+        [*]   Enable U-Boot .config Filtering
+        (auto)  Location of U-Boot .config file
+```
+
+> **Note:**
+> 
+> Linux Kernel .config filtering is only enabled if ```Kernel ---> [*] Linux Kernel ```
+>  (**```BR2_LINUX_KERNEL```**) is enabled.
+>
+> U-Boot .config filtering is enabled only if ```Bootloaders  --->  [*] U-Boot ```
+> (**```BR2_TARGET_UBOOT```**) is enabled.
+
+
+### LinuxLink Credentials
+
+To specify an alternative location for the Timesys LinuxLink Key File, it can
+be specified with the string **```BR2_EXTERNAL_VIGILES_KEY_FILE```**.
+
+Additionally, a custom LinuxLink Dashboard configuration can be set by first
+enabling **```VIGILES_ENABLE_DASHBOARD_CONFIG```** and specifying the path in
+the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**.
+
+
+```
+               *** Timesys LinuxLink Account Options ***
+        $(HOME)/timesys/linuxlink_key) Timesys LinuxLink Key Location
+        [*]   Use a custom LinuxLink Dashboard Configuration
+        ($(HOME)/timesys/dashboard_config) Timesys LinuxLink Dashboard Config Location
+```
+
+### Advanced Options
+
+For development purposes, some "Expert" options are available by first enabling
+**```VIGILES_ENABLE_EXPERT```**. These allow for debugging of the metadata that
+is collected.
+
+These features are not supported and no documentation is provided for them.
+
+
+```
+               *** Advanced Vigiles / Debug Options ***
+        [*]   Enable Vigiles Advanced and Debugging Options (Expert)
+        [ ]     Generate Manifest but don't Submit for Checking
+        [ ]     Write Intermediate JSON Files of Collected Metadata
+```
+
+
+Maintenance
+===========
+
+The Vigiles CVE Scanner and meta-timesys are maintained by [The Timesys Security team](mailto:vigiles@timesys.com).
+
+For Updates, Support and More Information, please see:
+
+[Vigiles Website](https://www.timesys.com/security/vigiles/)
+
+and
+
+[meta-timesys @ GitHub](https://github.com/TimesysGit/vigiles-buildroot)
+

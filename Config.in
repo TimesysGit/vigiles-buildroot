@@ -1,4 +1,4 @@
-config BR2_EXTERNAL_TIMESYS_VIGILES
+menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
 	bool "Enable Timesys Vigiles CVE Check"
 	default y
 	help
@@ -151,7 +151,7 @@ config VIGILES_ENABLE_DASHBOARD_CONFIG
 
 config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
 	string "Timesys LinuxLink Dashboard Config Location"
-	depends on USE_VIGILES_DASHBOARD_CONFIG
+	depends on VIGILES_ENABLE_DASHBOARD_CONFIG
 	default "$(HOME)/timesys/dashboard_config"
 	help
 	  By default your manifest will be uploaded under the "Private Workspace"
@@ -190,3 +190,4 @@ config VIGILES_GENERATE_INTERMEDIATE_FILES
 	default n
 
 endif
+
