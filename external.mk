@@ -21,7 +21,7 @@ vigiles-env = \
 	VIGILES_KEY_FILE="$(vigiles-key)" \
 	VIGILES_DASHBOARD_CONFIG="$(vigiles-dashboard)"
 
-vigiles-opts = "-b $(O)"
+vigiles-opts = -B $(CANONICAL_CURDIR) -b $(BUILD_DIR) -o $(CANONICAL_O)
 
 ifneq ($(vigiles-kconfig),auto)
 vigiles-opts += "-k $(vigiles-kconfig)"

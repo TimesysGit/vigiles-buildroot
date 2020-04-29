@@ -48,8 +48,12 @@ from kernel_uboot import get_kernel_info, get_uboot_info
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-b', '--build', dest='odir',
+    parser.add_argument('-B', '--base', dest='idir',
+                        help='Buildroot Source Directory')
+    parser.add_argument('-o', '--output', dest='odir',
                         help='Buildroot Output Directory')
+    parser.add_argument('-b', '--build', dest='bdir',
+                        help='Buildroot Build Directory')
     parser.add_argument('-k', '--kernel-config', dest='kconfig',
                         help='Custom Kernel Config to Use')
     parser.add_argument('-u', '--uboot-config', dest='uconfig',
@@ -70,7 +74,10 @@ def parse_args():
         'debug': args.debug,
         'write_intm': args.write_intm,
         'do_check': args.do_check,
-        'bdir': args.odir.strip() if args.odir else '.',
+        'topdir': args.idir.strip() \
+            if args.idir else os.path.abspath(os.curdir),
+        'odir': args.odir.strip() if args.odir else None,
+        'bdir': args.bdir.strip() if args.bdir else None,
         'kconfig': args.kconfig.strip() \
             if args.kconfig \
             else 'auto',
@@ -78,7 +85,12 @@ def parse_args():
             if args.uconfig \
             else 'auto'
     }
-    vgls['vdir'] = os.path.join(vgls['bdir'], VIGILES_DIR)
+
+    if not vgls.get('odir', None):
+        vgls['odir'] = os.path.join(vgls['topdir'], 'output')
+    if not vgls.get('bdir', None):
+        vgls['bdir'] = os.path.join(vgls['odir'], 'build')
+    vgls['vdir'] = os.path.join(vgls['odir'], VIGILES_DIR)
     return vgls
 
 

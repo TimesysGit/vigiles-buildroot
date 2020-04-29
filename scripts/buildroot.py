@@ -21,25 +21,46 @@ from utils import py_to_kconfig, kconfig_to_py, kconfig_bool
 from utils import write_intm_json
 
 
+def _find_dot_config(vgls):
+    odir_dot_config = os.path.join(vgls['odir'], '.config')
+    topdir_dot_config = os.path.join(vgls['topdir'], '.config')
+    curdir_dot_config = os.path.join(os.curdir, '.config')
+
+    if os.path.exists(odir_dot_config):
+        dot_config = odir_dot_config
+    elif os.path.exists(topdir_dot_config):
+        dot_config = topdir_dot_config
+    elif os.path.exists(curdir_dot_config):
+        dot_config = curdir_dot_config
+    else:
+        dot_config = None
+    return dot_config
+
+
 def get_config_options(vgls):
-    odir = vgls['bdir']
     config_dict = defaultdict()
     config_options = []
-    dot_config = os.path.join(odir, '.config')
 
-    if not os.path.exists(dot_config):
+    dot_config = _find_dot_config(vgls)
+    if not dot_config:
         print("ERROR: No Buildroot .config found.")
         print("\tPlease configure the Buildroot build,")
         print("\tor specify the build directory on the command line")
         return None
 
     print("Using Buildroot Config at %s" % dot_config)
-    with open(dot_config, 'r') as config_in:
-        config_options = [
-            f_line.rstrip()[4:]
-            for f_line in config_in
-            if f_line.startswith('BR2_')
-        ]
+    try:
+        with open(dot_config, 'r') as config_in:
+            config_options = [
+                f_line.rstrip()[4:]
+                for f_line in config_in
+                if f_line.startswith('BR2_')
+            ]
+    except Exception as e:
+        print("Vigiles ERROR: Could not read/parse Buildroot .config")
+        print("\tFile: %s" % dot_config)
+        print("\tError: %s" % e)
+        return None
 
     for opt in config_options:
         key, value = opt.split('=', 1)
@@ -191,6 +212,10 @@ def _fixup_make_info(vgls):
 
     for name, pdict in pkg_dict.items():
         pdict['cve-version'] = _sanitize_version(pdict['cve-version'])
+        if 'builddir' in pdict:
+            pdict['builddir'] = os.path.join(vgls['bdir'], pdict['builddir'])
+        if 'srcdir' in pdict:
+            pdict['srcdir'] = os.path.join(vgls['bdir'], pdict['srcdir'])
 
     for virt, real in providers.items():
         if real in pkg_dict:
@@ -208,7 +233,7 @@ def get_make_info(vgls):
     # fetch all variables at once -- packages, build data, and all
     # that we'll need for kernel and u-boot metadata.
 
-    bdir = vgls['bdir']
+    odir = vgls['odir']
     pkg_dict = vgls['packages']
 
     var_string = _get_make_variables(pkg_dict.keys())
