@@ -72,6 +72,7 @@ def get_config_options(vgls):
     write_intm_json(vgls, 'config-vars', config_dict)
     return config_dict
 
+
 br2_pkg_var_list = [
     'builddir',
     'is-virtual',
@@ -82,7 +83,6 @@ br2_pkg_var_list = [
     'ignore-cves',
     'srcdir'
 ]
-
 
 def _get_make_variables(packages):
     package_vars = []
@@ -117,16 +117,21 @@ def _get_make_variables(packages):
 
 
 def _get_make_output(odir, var_string):
-    variables = subprocess.check_output(
-        [
-            "make",
-            ("O=%s" % odir),
-            "BR2_HAVE_DOT_CONFIG=y",
-            "-s",
-            "printvars",
-            ("VARS=%s" % var_string)
-        ]
-    )
+    try:
+        variables = subprocess.check_output(
+            [
+                "make",
+                ("O=%s" % odir),
+                "BR2_HAVE_DOT_CONFIG=y",
+                "-s",
+                "printvars",
+                ("VARS=%s" % var_string)
+            ]
+        )
+    except Exception as e:
+        print("Vigiles ERROR: Could not execute Buildroot Make process")
+        print("\tError: %s" % e)
+        return None
     return variables.decode().splitlines()
 
 
@@ -237,7 +242,10 @@ def get_make_info(vgls):
     pkg_dict = vgls['packages']
 
     var_string = _get_make_variables(pkg_dict.keys())
-    variable_list = _get_make_output(bdir, var_string)
+    variable_list = _get_make_output(odir, var_string)
+    if not variable_list:
+        return None
+
     vgls['make'] = _transform_make_info(vgls, variable_list)
     make_dict = _fixup_make_info(vgls)
 

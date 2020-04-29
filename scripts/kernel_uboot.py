@@ -104,6 +104,12 @@ def _kernel_config(kdir, kconfig) -> list:
     else:
         dot_config = kconfig
 
+    if not os.path.exists(dot_config):
+        print("Vigiles WARNING: Kernel .config file does not exist.")
+        print("\tFile: %s" % kconfig_in)
+        print("\tKernel .config filtering will be disabled.")
+        return None
+
     config_options = []
     dot_config_options = _get_config_opts(dot_config, preamble_length=4)
 
@@ -129,10 +135,15 @@ def _write_config(vgls, pkg_dict, config_options):
     mkdirhier(vgls_dir)
 
     print("\t* Writing Output: %s" % config_file)
-    with open(config_file, 'w') as config_out:
-        print('\n'.join(config_options), file=config_out, flush=True)
-        print('\n', file=config_out, flush=True)
-
+    try:
+        with open(config_file, 'w') as config_out:
+            print('\n'.join(config_options), file=config_out, flush=True)
+            print('\n', file=config_out, flush=True)
+    except Exception as e:
+        print("Vigiles WARNING: Could not write .config output.")
+        print("\tFile: %s" % config_file)
+        print("\tError: %s" % e)
+        config_file = 'none'
     return config_file
 
 
@@ -141,22 +152,31 @@ def get_kernel_info(vgls):
     kdir = linux_dict.get('builddir', '')
     kconfig_in = vgls['kconfig']
 
+    linux_dict['cve-product'] = 'linux_kernel'
+
     if not kdir:
         print("WARNING: Kernel Config: Build directory not defined.")
         return None
 
-    linux_dict['cve-product'] = 'linux_kernel'
+    if os.path.exists(kdir):
+        ver = _kernel_version(kdir)
+    else:
+        print("WARNING: Linux Kernel: Build directory does not exist.")
+        print("\tLinux Kernel build directory: %s" % kdir)
+        return None
 
-    ver = _kernel_version(kdir)
-    if ver:
-        print("\t* Kernel Version: %s" % ver)
-        linux_dict['cve-version'] = ver
+    print("\t* Kernel Version: %s" % ver)
+    linux_dict['cve-version'] = ver
 
     if kconfig_in and kconfig_in != 'none':
-        if os.path.exists(kconfig_in) or kconfig_in == 'auto':
-            config_opts = _kernel_config(kdir, kconfig_in)
+        kconfig_out = 'none'
+        config_opts = _kernel_config(kdir, kconfig_in)
+        if config_opts:
             kconfig_out = _write_config(vgls, linux_dict, config_opts)
-            vgls['kconfig'] = kconfig_out
+        else:
+            print("Vigiles WARNING: No Linux Kernel config options.")
+            print("\tKernel .config filtering will be disabled.")
+        vgls['kconfig'] = kconfig_out
 
 
 def _uboot_version(udir):
@@ -182,6 +202,12 @@ def _uboot_config(udir, uconfig):
         dot_config = uconfig
         autoconf = ''
 
+    if not os.path.exists(dot_config):
+        print("Vigiles WARNING: U-Boot .config file does not exist.")
+        print("\tFile: %s" % uconfig_in)
+        print("\tU-Boot .config filtering will be disabled.")
+        return None
+
     config_options = []
     dot_config_options = _get_config_opts(dot_config, preamble_length=4)
     if dot_config_options:
@@ -196,7 +222,8 @@ def _uboot_config(udir, uconfig):
             print("\t* U-Boot Config: %d autoconf Options" %
                   len(autoconf_options))
 
-    print("\t* U-Boot Config: %d Options" % len(config_options))
+    if config_options:
+        print("\t* U-Boot Config: %d Options" % len(config_options))
     return config_options
 
 
@@ -205,19 +232,28 @@ def get_uboot_info(vgls):
     udir = uboot_dict.get('builddir', '')
     uconfig_in = vgls['uconfig']
 
+    uboot_dict['cve-product'] = 'u-boot'
+
     if not udir:
         print("WARNING: U-Boot Config: Build directory not defined.")
         return None
 
-    if udir:
+    if os.path.exists(udir):
         ver = _uboot_version(udir)
-        uboot_dict['cve-version'] = ver
-        print("\t* U-Boot Version: %s" % ver)
+    else:
+        print("WARNING: U-Boot Config: Build directory does not exist.")
+        print("\tU-Boot build directory: %s" % udir)
+        return None
 
-    uboot_dict['cve-product'] = 'u-boot'
+    uboot_dict['cve-version'] = ver
+    print("\t* U-Boot Version: %s" % ver)
 
     if uconfig_in and uconfig_in != 'none':
-        if os.path.exists(uconfig_in) or uconfig_in == 'auto':
-            config_opts = _uboot_config(udir, uconfig_in)
+        uconfig_out = 'none'
+        config_opts = _uboot_config(udir, uconfig_in)
+        if config_opts:
             uconfig_out = _write_config(vgls, uboot_dict, config_opts)
-            vgls['uconfig'] = uconfig_out
+        else:
+            print("Vigiles WARNING: No U-Boot config options.")
+            print("\tU-Boot .config filtering will be disabled.")
+        vgls['uconfig'] = uconfig_out
