@@ -39,8 +39,7 @@ import argparse
 import os
 import sys
 
-from br2_config import get_config_options
-from br2_make import get_make_info
+from buildroot import get_config_options, get_make_info
 from manifest import VIGILES_DIR, write_manifest
 from packages import get_package_info
 from checkcves import vigiles_request
