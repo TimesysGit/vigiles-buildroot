@@ -23,10 +23,22 @@ VIGILES_DEFAULT_REPORT = 'buildroot-rootfs-report.txt'
 VIGILES_MANIFEST_VERSION = '1.20'
 
 
-def _init_manifest(vgls):
-    _defconfig = vgls['config'].get('defconfig', 'custom')
-    _machine = _defconfig.split('/')[-1].replace('_defconfig', '')
+def _get_machine_name(vgls):
+    # BR2_DEFCONFIG is always set in the .config file, which is in
+    #   vgls['config']['defconfig'].
+    # If an existing defconfig is used, it's set to the pathname of the
+    #   defconfig: <Buildroot Source>/configs/imx8mpico_defconfig
+    # But, if it's configured from scratch, it's set to '$(CONFIG_DIR)/defconfig',
+    #   so we use the best value we have for the sub-architecture.
+    _defconfig = os.path.basename(vgls['config'].get('defconfig', 'custom'))
+    if _defconfig != 'defconfig':
+        _machine = _defconfig.replace('_defconfig', '')
+    else:
+        _machine = vgls['config'].get('gcc-target-cpu', vgls['config']['arch'])
+    return _machine
 
+
+def _init_manifest(vgls):
     try:
         _commit = subprocess.check_output([
                 'git', 'rev-parse',
@@ -46,7 +58,7 @@ def _init_manifest(vgls):
         'distro_version': vgls['make']['br2']['meta']['version'],
         'hostname': vgls['config'].get('target-generic-hostname', 'buildroot'),
         'image': VIGILES_DEFAULT_IMAGE,
-        'machine': _machine,
+        'machine': _get_machine_name(vgls),
         'manifest_version': VIGILES_MANIFEST_VERSION,
     }
     return build_dict
