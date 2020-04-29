@@ -1,32 +1,32 @@
 menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
-	bool "Enable Timesys Vigiles CVE Check"
-	default y
-	help
-	  This option enables an additional Post-Image step that gathers metadata
-	  about the installed packages (name, version, applied patches, etc). and
-	  submits a manifest to the Timesys LinuxLink Vigiles service in exchange
-	  for a reports that lists the CVEs known to affect the configuration.
+    bool "Enable Timesys Vigiles CVE Check"
+    default y
+    help
+      This option enables an additional Post-Image step that gathers metadata
+      about the installed packages (name, version, applied patches, etc). and
+      submits a manifest to the Timesys LinuxLink Vigiles service in exchange
+      for a reports that lists the CVEs known to affect the configuration.
 
-	  The process will also collect and submit the .config files for the
-	  Linux Kernel and U-Boot (if configured) and submit them along with the
-	  manifest for additional CVE filtering.
+      The process will also collect and submit the .config files for the
+      Linux Kernel and U-Boot (if configured) and submit them along with the
+      manifest for additional CVE filtering.
 
-	  The manifest, config files and report will be placed in a subdirectory
-	  of the build by default:
+      The manifest, config files and report will be placed in a subdirectory
+      of the build by default:
 
-	    vigiles/
-	    ├── buildroot-rootfs-cve.json
-	    ├── buildroot-rootfs-report.txt
-	    ├── linux-4.14.98.config
-	    └── uboot-2018.03.config
+        vigiles/
+        |-- buildroot-rootfs-cve.json
+        |-- buildroot-rootfs-report.txt
+        |-- linux-4.14.98.config
+        |-- uboot-2018.03.config
 
-	  In order to receive a full online and text report, a (free) Timesys
-	  Linuxlink account must be obtained and the associated key configured
-	  below for the service.
+      In order to receive a full online and text report, a (free) Timesys
+      Linuxlink account must be obtained and the associated key configured
+      below for the service.
 
-	  More information can be found here:
+      More information can be found here:
 
-	    https://www.timesys.com/security/vigiles/
+        https://www.timesys.com/security/vigiles/
 
 
 if BR2_EXTERNAL_TIMESYS_VIGILES
@@ -34,160 +34,160 @@ if BR2_EXTERNAL_TIMESYS_VIGILES
 comment "Vigiles Kernel CVE Reporting Options"
 
 config VIGILES_ENABLE_KERNEL_CONFIG
-	bool "Enable Linux Kernel .config Filtering"
-	depends on BR2_LINUX_KERNEL
-	default y
-	help
-	  If selected, this option will enable Linux Kernel .config filtering
-	  of reported CVEs by the Timesys LinuxLink Vigiles service.
+    bool "Enable Linux Kernel .config Filtering"
+    depends on BR2_LINUX_KERNEL
+    default y
+    help
+      If selected, this option will enable Linux Kernel .config filtering
+      of reported CVEs by the Timesys LinuxLink Vigiles service.
 
-	  This option is enabled by default and greatly reduces False-Positive
-	  matches of CVEs that are applicable to the kernel that will run on the
-	  Target.
+      This option is enabled by default and greatly reduces False-Positive
+      matches of CVEs that are applicable to the kernel that will run on the
+      Target.
 
-	  The .config is automatically found based on the kernel that's configured
-	  with Buildroot through standard means (this interface). The following
-	  option allows one to specify the location of the kernel's .config file
-	  if e.g. it's built from an external location.
+      The .config is automatically found based on the kernel that's configured
+      with Buildroot through standard means (this interface). The following
+      option allows one to specify the location of the kernel's .config file
+      if e.g. it's built from an external location.
 
-	  If unsure, choose Y.
+      If unsure, choose Y.
 
 
 config BR2_EXTERNAL_VIGILES_KERNEL_CONFIG
-	string "Location of Linux Kernel .config file"
-	default "auto"
-	depends on VIGILES_ENABLE_KERNEL_CONFIG
-	help
-	  By default, the Linux Kernel .config file that is used to do CVE
-	  filtering is located automatically.
+    string "Location of Linux Kernel .config file"
+    default "auto"
+    depends on VIGILES_ENABLE_KERNEL_CONFIG
+    help
+      By default, the Linux Kernel .config file that is used to do CVE
+      filtering is located automatically.
 
-	  This option allows one to specify a custom location of a Linux Kernel
-	  .config file if, for instance, it is built from an external tree and
-	  therefore not included in the Buildroot tree.
+      This option allows one to specify a custom location of a Linux Kernel
+      .config file if, for instance, it is built from an external tree and
+      therefore not included in the Buildroot tree.
 
-	  If the kernel is included in the Buildroot tree and built by default
-	  in the standard build process, or if you are unsure, leave this option
-	  with its default value of 'auto'.
+      If the kernel is included in the Buildroot tree and built by default
+      in the standard build process, or if you are unsure, leave this option
+      with its default value of 'auto'.
 
-	  If unset, Linux Kernel .config filtering will be disabled.
+      If unset, Linux Kernel .config filtering will be disabled.
 
-	  If the value indicates a non-existent file, a warning will be displayed
-	  and .config filtering will not be enabled, but the Vigiles CVE check
-	  will still function.
+      If the value indicates a non-existent file, a warning will be displayed
+      and .config filtering will not be enabled, but the Vigiles CVE check
+      will still function.
 
 
 config VIGILES_ENABLE_UBOOT_CONFIG
-	bool "Enable U-Boot .config Filtering"
-	depends on BR2_TARGET_UBOOT
-	default y
-	help
-	  If selected, this option will enable U-Boot configuration filtering of
-	  reported CVEs by the Timesys LinuxLink Vigiles service.
+    bool "Enable U-Boot .config Filtering"
+    depends on BR2_TARGET_UBOOT
+    default y
+    help
+      If selected, this option will enable U-Boot configuration filtering of
+      reported CVEs by the Timesys LinuxLink Vigiles service.
 
-	  This option is enabled by default and reduces False-Positive matches of
-	  CVEs that are applicable to the bootloader that will run on the Target.
+      This option is enabled by default and reduces False-Positive matches of
+      CVEs that are applicable to the bootloader that will run on the Target.
 
-	  The .config is automatically found based on the U-Boot release that's
-	  configured with Buildroot through standard means (this interface).
-	  The following option allows one to specify the location of a U-Boot
-	  .config file if e.g. it's built from an external location.
+      The .config is automatically found based on the U-Boot release that's
+      configured with Buildroot through standard means (this interface).
+      The following option allows one to specify the location of a U-Boot
+      .config file if e.g. it's built from an external location.
 
-	  If unsure, choose Y.
+      If unsure, choose Y.
 
 config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
-	string "Location of U-Boot .config file"
-	default "auto"
-	depends on VIGILES_ENABLE_UBOOT_CONFIG
-	help
-	  By default, the U-Boot .config file that is used to do CVE filtering is
-	  located automatically based on the top-level Buildroot configuration.
+    string "Location of U-Boot .config file"
+    default "auto"
+    depends on VIGILES_ENABLE_UBOOT_CONFIG
+    help
+      By default, the U-Boot .config file that is used to do CVE filtering is
+      located automatically based on the top-level Buildroot configuration.
 
-	  This option allows one to specify a custom location of a U-Boot .config
-	  file if, for instance, it is built from an external tree and therefore
-	  not included in the Buildroot tree.
+      This option allows one to specify a custom location of a U-Boot .config
+      file if, for instance, it is built from an external tree and therefore
+      not included in the Buildroot tree.
 
-	  If U-Boot is included in the Buildroot tree and built by default in the
-	  standard build process, or if you are unsure, leave this option with its
-	  default value of 'auto'.
+      If U-Boot is included in the Buildroot tree and built by default in the
+      standard build process, or if you are unsure, leave this option with its
+      default value of 'auto'.
 
-	  ** NOTE ** The U-Boot configuration that is collected and used for CVE
-	  filtering is composed of _both_ the U-Boot .config file (as generated
-	  from the Kconfig process) AND include/autoconf.mk (which is generated
-	  automatically by a post-configuration step). If you specify a custom
-	  file path, it is assumed that it contains all Kconfig options (i.e. the
-	  contents of both files in your external tree.
+      ** NOTE ** The U-Boot configuration that is collected and used for CVE
+      filtering is composed of _both_ the U-Boot .config file (as generated
+      from the Kconfig process) AND include/autoconf.mk (which is generated
+      automatically by a post-configuration step). If you specify a custom
+      file path, it is assumed that it contains all Kconfig options (i.e. the
+      contents of both files in your external tree.
 
-	  If unset, U-Boot .config filtering will be disabled.
+      If unset, U-Boot .config filtering will be disabled.
 
-	  If the value indicates a non-existent file, a warning will be displayed
-	  and .config filtering will not be enabled, but the Vigiles CVE check
-	  will still function.
+      If the value indicates a non-existent file, a warning will be displayed
+      and .config filtering will not be enabled, but the Vigiles CVE check
+      will still function.
 
 
 comment "Timesys LinuxLink Account Options"
 
 config BR2_EXTERNAL_VIGILES_KEY_FILE
-	string "Timesys LinuxLink Key Location"
-	default "$(HOME)/timesys/linuxlink_key"
-	help
-	  This option specifies the location of your Timesys LinuxLink Key File.
+    string "Timesys LinuxLink Key Location"
+    default "$(HOME)/timesys/linuxlink_key"
+    help
+      This option specifies the location of your Timesys LinuxLink Key File.
 
-	  The Key File is needed to enable full reporting of the applicable CVEs
-	  on the Target. One can be obtained by registering for a free (or
-	  fee-based premium) Timesys LinuxLink account:
-		https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File
+      The Key File is needed to enable full reporting of the applicable CVEs
+      on the Target. One can be obtained by registering for a free (or
+      fee-based premium) Timesys LinuxLink account:
+        https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File
 
-	  Once registered, the Key File can be downloaded and this option should
-	  indicate its location.
+      Once registered, the Key File can be downloaded and this option should
+      indicate its location.
 
-	  If the Key File does not exist, the Vigiles CVE check will still function
-	  in Demo Mode and the results will only show a high-level summary of CVE
-	  vulnerability.
+      If the Key File does not exist, the Vigiles CVE check will still function
+      in Demo Mode and the results will only show a high-level summary of CVE
+      vulnerability.
 
 
 config VIGILES_ENABLE_DASHBOARD_CONFIG
-	bool "Use a custom LinuxLink Dashboard Configuration"
-	default n
+    bool "Use a custom LinuxLink Dashboard Configuration"
+    default n
 
 config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
-	string "Timesys LinuxLink Dashboard Config Location"
-	depends on VIGILES_ENABLE_DASHBOARD_CONFIG
-	default "$(HOME)/timesys/dashboard_config"
-	help
-	  By default your manifest will be uploaded under the "Private Workspace"
-	  product on your LinuxLink Vigiles Dashboard.
+    string "Timesys LinuxLink Dashboard Config Location"
+    depends on VIGILES_ENABLE_DASHBOARD_CONFIG
+    default "$(HOME)/timesys/dashboard_config"
+    help
+      By default your manifest will be uploaded under the "Private Workspace"
+      product on your LinuxLink Vigiles Dashboard.
 
-	  To upload your manifest to a particular product or existing manifest on
-	  your Vigiles Dashboard, download the associated Dashboard Config and set
-	  this option to the path of that file.
+      To upload your manifest to a particular product or existing manifest on
+      your Vigiles Dashboard, download the associated Dashboard Config and set
+      this option to the path of that file.
 
-	  Dashboard Configs downloaded from the Products Page will upload new
-	  manifests to the associated product with a default name.
+      Dashboard Configs downloaded from the Products Page will upload new
+      manifests to the associated product with a default name.
 
-	  The link can be found under the Actions column for each product.
-	  Note: Click on "New Product" if you have not yet created one.
+      The link can be found under the Actions column for each product.
+      Note: Click on "New Product" if you have not yet created one.
 
 
 comment "Advanced Vigiles / Debug Options"
 
 config VIGILES_ENABLE_EXPERT
-	bool "Enable Vigiles Advanced and Debugging Options (Expert)"
-	default n
-	help
-	  This options enables some development options for debugging the
-	  Vigiles manifest generation and CVE reporting.
+    bool "Enable Vigiles Advanced and Debugging Options (Expert)"
+    default n
+    help
+      This options enables some development options for debugging the
+      Vigiles manifest generation and CVE reporting.
 
-	  If unsure, say N.
+      If unsure, say N.
 
 config VIGILES_METADATA_ONLY
-	bool "Generate Manifest but don't Submit for Checking"
-	depends on VIGILES_ENABLE_EXPERT
-	default n
+    bool "Generate Manifest but don't Submit for Checking"
+    depends on VIGILES_ENABLE_EXPERT
+    default n
 
 config VIGILES_GENERATE_INTERMEDIATE_FILES
-	bool "Write Intermediate JSON Files of Collected Metadata"
-	depends on VIGILES_ENABLE_EXPERT
-	default n
+    bool "Write Intermediate JSON Files of Collected Metadata"
+    depends on VIGILES_ENABLE_EXPERT
+    default n
 
 endif
 
