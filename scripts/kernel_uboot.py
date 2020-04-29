@@ -20,6 +20,7 @@ def _get_version_from_makefile(sdir):
         'revision': None,
         'extra': None
     }
+    version_string = None
 
     if not sdir:
         print("WARNING: Source directory not defined.")
@@ -50,7 +51,14 @@ def _get_version_from_makefile(sdir):
         print("WARNING: Could not read/parse Makefile: %s." % makefile_path)
         print("\tError: %s" % e)
         return None
-    return v
+
+    if v['major'] and v['minor']:
+        version_string = '.'.join([v['major'], v['minor']])
+    if v['revision']:
+        version_string = '.'.join([version_string, v['revision']])
+    if v['extra']:
+        version_string = version_string + v['extra']
+    return version_string
 
 
 def _get_config_opts(config_file, preamble_length=0):
@@ -84,21 +92,7 @@ def _get_config_opts(config_file, preamble_length=0):
     return config_options
 
 
-def _kernel_version(kdir) -> str:
-    v = _get_version_from_makefile(kdir)
-    if not v:
-        return None
-    if v['major'] and v['minor']:
-        ver = '.'.join([v['major'], v['minor']])
-    if v['revision']:
-        ver = '.'.join([ver, v['revision']])
-    if v['extra']:
-        ver = ver + v['extra']
-    return ver
-
-
 def _kernel_config(kdir, kconfig) -> list:
-
     if kconfig == 'auto':
         dot_config = os.path.relpath(os.path.join(kdir, '.config'))
     else:
@@ -159,7 +153,7 @@ def get_kernel_info(vgls):
         return None
 
     if os.path.exists(kdir):
-        ver = _kernel_version(kdir)
+        ver = _get_version_from_makefile(kdir)
     else:
         print("WARNING: Linux Kernel: Build directory does not exist.")
         print("\tLinux Kernel build directory: %s" % kdir)
@@ -178,18 +172,6 @@ def get_kernel_info(vgls):
             print("\tKernel .config filtering will be disabled.")
         vgls['kconfig'] = kconfig_out
 
-
-def _uboot_version(udir):
-    v = _get_version_from_makefile(udir)
-    if not v:
-        return None
-    if v['major'] and v['minor']:
-        ver = '.'.join([v['major'], v['minor']])
-    if v['revision']:
-        ver = '.'.join([ver, v['revision']])
-    if v['extra']:
-        ver = ver + v['extra']
-    return ver
 
 
 def _uboot_config(udir, uconfig):
@@ -239,7 +221,7 @@ def get_uboot_info(vgls):
         return None
 
     if os.path.exists(udir):
-        ver = _uboot_version(udir)
+        ver = _get_version_from_makefile(udir)
     else:
         print("WARNING: U-Boot Config: Build directory does not exist.")
         print("\tU-Boot build directory: %s" % udir)
