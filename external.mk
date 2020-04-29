@@ -43,15 +43,6 @@ endif 	# ($(VIGILES_ENABLE_EXPERT),y)
 
 vigiles-check:
 	@$(call MESSAGE,"Running Vigiles CVE Check")
-	@$(call MESSAGE,"Vigiles -- Key File: $(vigiles-key)")
-	@$(call MESSAGE,"Vigiles -- Dashboard Configuration: $(vigiles-dashboard)")
-	@$(call MESSAGE,"Vigiles -- Kernel Configuration: $(vigiles-kconfig)")
-	@$(call MESSAGE,"Vigiles -- U-Boot Configuration: $(vigiles-uconfig)")
-	@$(call MESSAGE,"	\
-		$(vigiles-env)		\
-		$(vigiles-script)	\
-		$(vigiles-opts)		\
-	")
 	(	\
 		$(vigiles-env)		\
 		$(vigiles-script)	\
