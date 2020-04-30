@@ -55,7 +55,7 @@ config VIGILES_ENABLE_KERNEL_CONFIG
 
 config BR2_EXTERNAL_VIGILES_KERNEL_CONFIG
     string "Location of Linux Kernel .config file"
-    default "auto"
+    default auto
     depends on VIGILES_ENABLE_KERNEL_CONFIG
     help
       By default, the Linux Kernel .config file that is used to do CVE
@@ -96,7 +96,7 @@ config VIGILES_ENABLE_UBOOT_CONFIG
 
 config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
     string "Location of U-Boot .config file"
-    default "auto"
+    default auto
     depends on VIGILES_ENABLE_UBOOT_CONFIG
     help
       By default, the U-Boot .config file that is used to do CVE filtering is
