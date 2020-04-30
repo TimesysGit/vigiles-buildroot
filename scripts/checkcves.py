@@ -117,11 +117,7 @@ def print_cves(result, demo=False, outfile=None):
                 print('\tStatus:  %s' % cve['status'], file=outfile)
                 patches = cve.get('fixedby')
                 if patches:
-                    if cve['status'] == 'Unfixed, Patch Available':
-                        print('\tPatched in meta-timesys-security commit(s):',
-                              file=outfile)
-                    else:
-                        print('\tPatched by:', file=outfile)
+                    print('\tPatched by:', file=outfile)
                     for patch in patches:
                         print('\t* %s' % patch, file=outfile)
 
@@ -177,11 +173,6 @@ def print_summary(result, outfile=None):
               unfixed['total'], unfixed['rfs'],
               unfixed['kernel'], unfixed['toolchain']),
               file=f_out)
-        print('\tUnfixed, Patch Available: '
-              '{} ({} RFS, {} Kernel, {} Toolchain)'.format(
-                  unapplied['total'], unapplied['rfs'],
-                  unapplied['kernel'], unapplied['toolchain']),
-              file=f_out)
         print('\tFixed: {} ({} RFS, {} Kernel, {} Toolchain)'.format(
             fixed['total'], fixed['rfs'],
             fixed['kernel'], fixed['toolchain']),
@@ -194,11 +185,9 @@ def print_summary(result, outfile=None):
         cves = result.get('cves', {})
         print('\n-- Vigiles CVE Overview --', file=f_out)
         print('\n\tUnfixed: %d\n'
-              '\tUnfixed, Patch Available: %d\n'
               '\tFixed: %d\n'
               '\tCPU: %d'
               % (cves.get('unfixed_count', 0),
-                 cves.get('unapplied_count', 0),
                  cves.get('fixed_count', 0),
                  cves.get('arch_count', 0)),
               file=f_out)
@@ -216,12 +205,6 @@ def print_foootnotes(f_out=None):
     print('\t* "CPU" CVEs are filed against the hardware.\n'
           '\t  They may be fixed or mitigated in other components such as '
           'the kernel or compiler.\n',
-          file=f_out)
-
-    print('\t* "Patch Available" CVEs have a fix available in the '
-          'meta-timesys-security layer.\n'
-          '\t  If the layer is already included, then you may need to '
-          'update your copy.\n',
           file=f_out)
 
     print('\t* "Whitelist" Recipes and CVEs are listed in the '
