@@ -192,7 +192,6 @@ def print_summary(result, outfile=None):
 
     def show_demo_summary(f_out=outfile):
         cves = result.get('cves', {})
-        print("%s" % json.dumps(result, indent=4, sort_keys=True))
         print('\n-- Vigiles CVE Overview --', file=f_out)
         print('\n\tUnfixed: %d\n'
               '\tUnfixed, Patch Available: %d\n'
