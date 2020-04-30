@@ -206,7 +206,8 @@ These features are not supported and no documentation is provided for them.
 Maintenance
 ===========
 
-The Vigiles CVE Scanner and meta-timesys are maintained by [The Timesys Security team](mailto:vigiles@timesys.com).
+The Vigiles CVE Scanner and Buildroot support are maintained by
+[The Timesys Security team](mailto:vigiles@timesys.com).
 
 For Updates, Support and More Information, please see:
 
@@ -214,5 +215,4 @@ For Updates, Support and More Information, please see:
 
 and
 
-[meta-timesys @ GitHub](https://github.com/TimesysGit/vigiles-buildroot)
-
+[vigiles-buildroot @ GitHub](https://github.com/TimesysGit/vigiles-buildroot)
