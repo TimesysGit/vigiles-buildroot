@@ -20,7 +20,7 @@ import re
 from collections import defaultdict
 
 from utils import write_intm_json
-
+from utils import dbg, info, warn
 
 def get_package_info(vgls):
     config_dict = vgls.get('config', {})
@@ -35,12 +35,11 @@ def get_package_info(vgls):
                     pkg = key[8:]
                     config_pkgs.append(pkg)
 
-        print("Buildroot Config: %d Packages:" % len(config_pkgs))
         if config_dict.get('linux-kernel', False):
             config_pkgs.append('linux')
         if config_dict.get('target-uboot', False):
             config_pkgs.append('uboot')
-        print("Buildroot Config: %d Packages (w/ kernel + uboot):"
+        dbg(vgls, "Buildroot Config: %d possible packages (w/ kernel + uboot)"
               % len(config_pkgs))
         return config_pkgs
 
@@ -90,7 +89,7 @@ def get_package_info(vgls):
                 if skip:
                     continue
                 pkg_dict[pkgname] = os.path.relpath(pkgpath)
-        print("INFO: Found %d Total Packages" % len(pkg_dict.keys()))
+        info(vgls, "Found %d packages" % len(pkg_dict.keys()))
         return pkg_dict
 
 
@@ -120,7 +119,7 @@ def get_package_info(vgls):
                 try:
                     patch_text = f.read()
                 except UnicodeDecodeError:
-                    print("WARNING: Failed to read patch %s using UTF-8 encoding"
+                    info(vgls, "Failed to read patch %s using UTF-8 encoding"
                           " trying with iso8859-1" % patch_path)
                     f.close()
                     with open(patch_path, "r", encoding="iso8859-1") as f:
@@ -170,13 +169,13 @@ def get_package_info(vgls):
     pkg_list = _config_packages(config_dict)
 
     if not pkg_list:
-        print("ERROR: No packages found in .config.")
+        warn("No packages found in Buildroot .config.")
         return None
 
     known_packages = _package_makefiles(pkg_list)
 
     if not known_packages:
-        print("ERROR: No configured packages seem to exist in tree.")
+        warn("No configured packages seem to exist in tree.")
         return None
 
     for name, makefile in known_packages.items():

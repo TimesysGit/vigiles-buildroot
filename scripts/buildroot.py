@@ -19,7 +19,7 @@ from collections import defaultdict
 
 from utils import py_to_kconfig, kconfig_to_py, kconfig_bool
 from utils import write_intm_json
-
+from utils import dbg, info, warn, err
 
 def _find_dot_config(vgls):
     odir_dot_config = os.path.join(vgls['odir'], '.config')
@@ -43,12 +43,14 @@ def get_config_options(vgls):
 
     dot_config = _find_dot_config(vgls)
     if not dot_config:
-        print("ERROR: No Buildroot .config found.")
-        print("\tPlease configure the Buildroot build,")
-        print("\tor specify the build directory on the command line")
+        err([
+            "No Buildroot .config found.",
+            "Please configure the Buildroot build.",
+            "Or, specify the build directory on the command line"
+        ])
         return None
 
-    print("Using Buildroot Config at %s" % dot_config)
+    dbg(vgls, "Using Buildroot Config at %s" % dot_config)
     try:
         with open(dot_config, 'r') as config_in:
             config_options = [
@@ -57,9 +59,11 @@ def get_config_options(vgls):
                 if f_line.startswith('BR2_')
             ]
     except Exception as e:
-        print("Vigiles ERROR: Could not read/parse Buildroot .config")
-        print("\tFile: %s" % dot_config)
-        print("\tError: %s" % e)
+        err([
+            "Could not read/parse Buildroot .config",
+            "File: %s" % dot_config,
+            "Error: %s" % e,
+        ])
         return None
 
     for opt in config_options:
@@ -68,7 +72,7 @@ def get_config_options(vgls):
         value = kconfig_bool(value.replace('"', ''))
         config_dict[key] = value
 
-    print("Buildroot Config: %d Options" % len(config_dict.keys()))
+    dbg(vgls, "Buildroot Config: %d Options" % len(config_dict.keys()))
     write_intm_json(vgls, 'config-vars', config_dict)
     return config_dict
 
@@ -129,8 +133,10 @@ def _get_make_output(odir, var_string):
             ]
         )
     except Exception as e:
-        print("Vigiles ERROR: Could not execute Buildroot Make process")
-        print("\tError: %s" % e)
+        err([
+            " Could not execute Buildroot Make process",
+            "Error: %s" % e,
+        ])
         return None
     return variables.decode().splitlines()
 
@@ -188,13 +194,13 @@ shaver_string = '[0-9A-Fa-f]{40}'
 shaver_straight = re.compile('^%s$' % shaver_string)
 shaver_appendage = re.compile('%s%s$' % (re.escape('-g'), shaver_string))
 
-def _sanitize_version(version_in):
+def _sanitize_version(vgls, version_in):
     sha_match = shaver_appendage.search(version_in)
     version_out = version_in \
         if not sha_match \
         else version_in.replace(sha_match.group(), '')
     if version_out != version_in:
-        print("CVE Version Fixed Up: %s -> %s" % (version_in, version_out))
+        info(vgls, "CVE Version Fixed Up: %s -> %s" % (version_in, version_out))
     return version_out
 
 
@@ -216,7 +222,7 @@ def _fixup_make_info(vgls):
             pkg_dict[name]['cve-version'] = pdict['version']
 
     for name, pdict in pkg_dict.items():
-        pdict['cve-version'] = _sanitize_version(pdict['cve-version'])
+        pdict['cve-version'] = _sanitize_version(vgls, pdict['cve-version'])
         if 'builddir' in pdict:
             pdict['builddir'] = os.path.join(vgls['bdir'], pdict['builddir'])
         if 'srcdir' in pdict:

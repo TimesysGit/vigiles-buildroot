@@ -17,12 +17,16 @@
 #  and Dashboard configuration).
 #
 """
-vigiles-buildoot.py [-h] [-b ODIR] [-k KCONFIG] [-u UCONFIG] [-D] [-I] [-M]
+usage: vigiles-buildroot.py [-h] [-B IDIR] [-o ODIR] [-b BDIR] [-k KCONFIG]
+                            [-u UCONFIG] [-D] [-I] [-M]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -b ODIR, --build ODIR
+  -B IDIR, --base IDIR  Buildroot Source Directory
+  -o ODIR, --output ODIR
                         Buildroot Output Directory
+  -b BDIR, --build BDIR
+                        Buildroot Build Directory
   -k KCONFIG, --kernel-config KCONFIG
                         Custom Kernel Config to Use
   -u UCONFIG, --uboot-config UCONFIG
@@ -44,7 +48,7 @@ from manifest import VIGILES_DIR, write_manifest
 from packages import get_package_info
 from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
-
+from utils import dbg, info, warn
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -95,27 +99,27 @@ def parse_args():
 
 
 def collect_metadata(vgls):
-    print("Getting Config Info ...")
+    dbg(vgls, "Getting Config Info ...")
     vgls['config'] = get_config_options(vgls)
     if not vgls['config']:
         sys.exit(1)
 
-    print("Getting Package List ...")
+    dbg(vgls, "Getting Package List ...")
     vgls['packages'] = get_package_info(vgls)
     if not vgls['packages']:
         sys.exit(1)
 
-    print("Getting Make Variables ...")
+    dbg(vgls, "Getting Make Variables ...")
     vgls['make'] = get_make_info(vgls)
     if not vgls['make']:
         sys.exit(1)
 
     if 'linux' in vgls['packages']:
-        print("Getting Kernel Info ...")
+        dbg(vgls, "Getting Kernel Info ...")
         get_kernel_info(vgls)
 
     if 'uboot' in vgls['packages']:
-        print("Getting U-Boot Info ...")
+        dbg(vgls, "Getting U-Boot Info ...")
         get_uboot_info(vgls)
 
 

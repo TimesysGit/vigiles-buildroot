@@ -14,6 +14,7 @@ import subprocess
 import time
 
 from utils import mkdirhier
+from utils import dbg, info, warn
 
 VIGILES_DIR = 'vigiles'
 VIGILES_DEFAULT_DISTRO = 'buildroot'
@@ -45,8 +46,8 @@ def _init_manifest(vgls):
                 'HEAD'
             ]).splitlines()[0].decode()
     except Exception as e:
-        print("Vigiles WARNING: Could not determine Buildroot git HEAD.")
-        print("\tError: %s" % e)
+        warn("Could not determine Buildroot git HEAD.")
+        warn("\tError: %s" % e)
         _commit = 'Release'
 
     build_dict = {
@@ -122,7 +123,7 @@ def write_manifest(vgls):
 
     mkdirhier(vgls['vdir'])
 
-    print("Writing Manifest to %s" % vgls['manifest'])
+    info(vgls, "Writing Manifest to %s" % vgls['manifest'])
     with open(vgls['manifest'], 'w') as f:
         json.dump(final, f, indent=4, separators=(',', ': '), sort_keys=True)
         f.write('\n')

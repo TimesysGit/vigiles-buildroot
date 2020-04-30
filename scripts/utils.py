@@ -11,6 +11,7 @@
 import errno
 import json
 import os
+import sys
 
 
 # Case conversion helpers --
@@ -41,16 +42,20 @@ def kconfig_bool(value: str):
 
 def dbg(vgls, s):
     if vgls['debug']:
-        print("DEBUG: %s" % s, file=sys.stderr)
+        print("Vigiles DEBUG: %s" % s, file=sys.stderr)
 
 
 def info(vgls, s):
-    if vgls['verbose'] or vgls['debug']:
-        print("Vigiles INFO: %s" % s, file=sys.stderr)
+    print("Vigiles INFO: %s" % s, file=sys.stderr)
 
 
-def warn(vgls, s):
+def warn(s):
     print("Vigiles WARNING: %s" % s, file=sys.stderr)
+
+
+def err(s_list):
+    msg = '\n\t'.join(s_list)
+    print("Vigiles ERROR: %s" % msg, file=sys.stderr)
 
 
 def mkdirhier(directory):
