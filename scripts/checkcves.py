@@ -240,7 +240,7 @@ def print_whitelist(wl, outfile=None):
 
 
 def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
-    resource = '/api/cves/reports/yocto/'
+    resource = '/api/cves/reports/buildroot/'
     home_dir = os.path.expanduser('~')
     key_file = os.path.abspath(
         os.getenv(
