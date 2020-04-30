@@ -145,17 +145,19 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
       vulnerability.
 
 
+comment "Timesys Vigiles Dashboard Options"
+
 config VIGILES_ENABLE_DASHBOARD_CONFIG
-    bool "Use a custom LinuxLink Dashboard Configuration"
+    bool "Use a custom Vigiles Dashboard Configuration"
     default n
 
 config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
-    string "Timesys LinuxLink Dashboard Config Location"
+    string "Timesys Vigiles Dashboard Config Location"
     depends on VIGILES_ENABLE_DASHBOARD_CONFIG
     default "$(HOME)/timesys/dashboard_config"
     help
       By default your manifest will be uploaded under the "Private Workspace"
-      product on your LinuxLink Vigiles Dashboard.
+      product on your Vigiles Dashboard.
 
       To upload your manifest to a particular product or existing manifest on
       your Vigiles Dashboard, download the associated Dashboard Config and set

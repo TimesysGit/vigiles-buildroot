@@ -156,19 +156,24 @@ alternative path.
 To specify an alternative location for the Timesys LinuxLink Key File, it can
 be specified with the string **```BR2_EXTERNAL_VIGILES_KEY_FILE```**.
 
-Additionally, a custom LinuxLink Dashboard configuration can be set by first
-enabling **```VIGILES_ENABLE_DASHBOARD_CONFIG```** and specifying the path in
-the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**.
-
 
 ```
                *** Timesys LinuxLink Account Options ***
         $(HOME)/timesys/linuxlink_key) Timesys LinuxLink Key Location
-        [*]   Use a custom LinuxLink Dashboard Configuration
-        ($(HOME)/timesys/dashboard_config) Timesys LinuxLink Dashboard Config Location
 ```
 
-##### Vigiles Dashboard Configuration
+### Vigiles Dashboard Configuration
+
+A custom LinuxLink Dashboard configuration can be set by first
+enabling **```VIGILES_ENABLE_DASHBOARD_CONFIG```** and specifying the path in
+the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**.
+
+```
+                *** Timesys Vigiles Dashboard Options ***
+         [*]   Use a custom Vigiles Dashboard Configuration
+         ($(HOME)/timesys/dashboard_config) Timesys Vigiles Dashboard Config Location
+```
+
 By default your manifest will be uploaded under the "Private Workspace"
 product on the Vigiles Dashboard. To upload your manifest to a particular
 product or existing manifest on the Vigiles Dashboard, download the
@@ -179,7 +184,6 @@ will upload new manifests to the associated product with a default name.
 The link can be found under the Actions column for each product.
 
 _Note_: Click on "New Product" if you have not yet created one.
-
 
 
 ### Advanced Options
