@@ -126,17 +126,15 @@ def run_check(vgls):
         print("\tPath: %s" % manifest_path)
         sys.exit(1)
 
-    kconfig_path = vgls['kconfig']
-    if kconfig_path and not os.path.exists(kconfig_path):
-        print("ERROR: Given Kernel config does not exist at expected path.")
-        print("\tPath: %s" % kconfig_path)
-        sys.exit(1)
+    kconfig_path = ''
+    _kconfig = vgls.get('kconfig', 'none')
+    if _kconfig != 'none' and os.path.exists(_kconfig):
+        kconfig_path = _kconfig
 
-    uconfig_path = vgls['uconfig']
-    if uconfig_path and not os.path.exists(uconfig_path):
-        print("ERROR: Given U-Boot config does not exist at expected path.")
-        print("\tPath: %s" % uconfig_path)
-        sys.exit(1)
+    uconfig_path = ''
+    _uconfig = vgls.get('uconfig', 'none')
+    if _uconfig != 'none' and os.path.exists(_uconfig):
+        uconfig_path = _uconfig
 
     report_path = vgls['report']
     vigiles_request(
