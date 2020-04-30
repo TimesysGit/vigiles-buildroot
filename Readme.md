@@ -25,71 +25,69 @@ To generate a vulnerability report follow the below steps:
 
 1. Clone vigiles-buildroot repository at the same level as Buildroot directory.
 
-	```sh
-	git clone https://github.com/TimesysGit/vigiles-buildroot
-	```
+    ```sh
+    git clone https://github.com/TimesysGit/vigiles-buildroot
+    ```
 
 2. Download your LinuxLink Key File here and store it at the (recommended) path.
 
-	```sh
-	mkdir $HOME/timesys
-	cp $HOME/Downloads/linuxlink_key $HOME/timesys/linuxlink_key
-	```
+    ```sh
+    mkdir $HOME/timesys
+    cp $HOME/Downloads/linuxlink_key $HOME/timesys/linuxlink_key
+    ```
 
-	> Note: If the key is stored elsewhere, the location can be specified via the Buildroot configuration interface.
-	>
-	> See below for instructions.
+    > Note: If the key is stored elsewhere, the location can be specified via the Buildroot configuration interface.
+    >
+    > See below for instructions.
 
 3. Instruct Buildroot to include the Vigiles interface in its configuration.
-	```sh
-	make BR2_EXTERNAL=/path/to/vigiles-buildroot menuconfig
-	```
+    ```sh
+    make BR2_EXTERNAL=/path/to/vigiles-buildroot menuconfig
+    ```
 
-	> Note: If you are already using an external Buildroot tree/interface, multiple paths can be concatenated, e.g.:
+    > Note: If you are already using an external Buildroot tree/interface, multiple paths can be concatenated, e.g.:
 
-	>	```sh
- 	>	make BR2_EXTERNAL=/path/to/other/external/buildroot/interface:/path/to/vigiles-buildroot menuconfig
-	> ```
+    >   ```sh
+    >   make BR2_EXTERNAL=/path/to/other/external/buildroot/interface:/path/to/vigiles-buildroot menuconfig
+    > ```
 
-	> For more information on using external Buildroot interfaces, please see **[This Section of the Buildroot Documentation](https://buildroot.org/downloads/manual/manual.html#outside-br-custom)**
+    > For more information on using external Buildroot interfaces, please see **[This Section of the Buildroot Documentation](https://buildroot.org/downloads/manual/manual.html#outside-br-custom)**
 
 4. Execute Make with the Vigiles target
-	```sh
-	make vigiles-check
-	```
+    ```sh
+    make vigiles-check
+    ```
 
 
 5. View the Vigiles CVE (Text) Report Locally
 
-	The CVE report will be located in the ```vigiles/``` subdirectory of your Buildroot build output, with a name based on the Target configuration; e.g.:
-	```sh
-	wc -l output/vigiles/buildroot-imx8mpico-report.txt
-		3616 output/vigiles/buildroot-imx8mpico-report.txt
-	```
+    The CVE report will be located in the ```vigiles/``` subdirectory of your Buildroot build output, with a name based on the Target configuration; e.g.:
+    ```sh
+    wc -l output/vigiles/buildroot-imx8mpico-report.txt
+        3616 output/vigiles/buildroot-imx8mpico-report.txt
+    ```
 
 6. View the Vigiles CVE Online Report
 
-	The local CVE text report will contain a link to a comprehensive and graphical report; e.g.:
-	```
-	-- Vigiles CVE Report --
-	        View detailed online report at:
-	          https://linuxlink.timesys.com/cves/reports/< Unique Report Identifier>
-	```
+    The local CVE text report will contain a link to a comprehensive and graphical report; e.g.:
+    ```
+    -- Vigiles CVE Report --
+            View detailed online report at:
+              https://linuxlink.timesys.com/cves/reports/< Unique Report Identifier>
+    ```
 
-7. (Optional) Customize Your LinuxLink Vigiles Workspace
-
-By default the manifest is uploaded to the "Private Workspace” product under your Vigiles account. To view other options and for more detailed information visit: https://github.com/TimesysGit/vigiles-buildroot
-
-> Note: The manifest file that is generated for the report is also located in the ```vigiles/``` subdirectory
-> of your build output; e.g.:
-```sh
-wc -l ts-output/vigiles/buildroot-imx8mpico-manifest.json 
-	544 ts-output/vigiles/buildroot-imx8mpico-manifest.json
-```
-
-> This file may optionally be manually uploaded to Vigiles to generate a new CVE report.
-> Click on Buildroot under “Upload manifest” on the Vigiles Dashboard page to do the same.
-
+    #### The CVE Manifest
+    The Vigiles CVE Scanner creates a manifest that it sends to the LinuxLink
+    Server describing your build configuration. This manifest is located in the
+    ```vigiles/``` subdirectory of your Buildroot output (the same location as
+    the text report it receives back).
+    ```sh
+    wc -l output/vigiles/buildroot-imx8mpico-manifest.json 
+        557 output/vigiles/buildroot-imx8mpico-manifest.json
+    ```
+    In the event that something goes wrong, or if the results seem incorrect,
+    this file may offer insight as to why. It's important to include this file
+    with any support request.
 
 
 Configuration
@@ -118,8 +116,8 @@ Using ```make menuconfig```, the Vigiles configuration menu can be found under
 
 ```
 External options  ---> 
-	*** Timesys Vigiles CVE Checker (in /home/mochel/projects/buildroot/vigiles) ***
-	[*] Enable Timesys Vigiles CVE Check  --->
+    *** Timesys Vigiles CVE Checker (in /home/mochel/projects/buildroot/vigiles) ***
+    [*] Enable Timesys Vigiles CVE Check  --->
 ```
 
 ### Reporting and Filtering
@@ -131,8 +129,10 @@ If using a custom location for either the Kernel or U-Boot .config files, the
 paths can be specified using **```BR2_EXTERNAL_VIGILES_KERNEL_CONFIG```** and
 **```BR2_EXTERNAL_VIGILES_UBOOT_CONFIG```**.
 
-The default for both paths is _```auto```_. It is recommended that this value
-is used unless it is absolutely necessary to specify an alternative path.
+The default for both paths is _```auto```_ which results in automatically using
+the .config from the package's configured build directory. It is recommended
+that this value is used unless it is absolutely necessary to specify an
+alternative path.
 
 ```
               *** Vigiles Kernel CVE Reporting Options ***
@@ -167,6 +167,20 @@ the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**.
         [*]   Use a custom LinuxLink Dashboard Configuration
         ($(HOME)/timesys/dashboard_config) Timesys LinuxLink Dashboard Config Location
 ```
+
+##### Vigiles Dashboard Configuration
+By default your manifest will be uploaded under the "Private Workspace"
+product on the Vigiles Dashboard. To upload your manifest to a particular
+product or existing manifest on the Vigiles Dashboard, download the
+associated Dashboard Config to `~/timesys/dashboard_config`.
+
+Dashboard Configs downloaded from the [Products page](https://linuxlink.timesys.com/vigiles/)
+will upload new manifests to the associated product with a default name.
+The link can be found under the Actions column for each product.
+
+_Note_: Click on "New Product" if you have not yet created one.
+
+
 
 ### Advanced Options
 
