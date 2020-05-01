@@ -13,7 +13,7 @@ import os
 from utils import mkdirhier
 from utils import dbg, info, warn
 
-def _get_version_from_makefile(sdir):
+def _get_version_from_makefile(sdir, with_extra=True):
     v = {
         'major': None,
         'minor': None,
@@ -56,7 +56,7 @@ def _get_version_from_makefile(sdir):
         version_string = '.'.join([v['major'], v['minor']])
     if v['revision']:
         version_string = '.'.join([version_string, v['revision']])
-    if v['extra']:
+    if v['extra'] and with_extra:
         version_string = version_string + v['extra']
     return version_string
 
@@ -225,7 +225,7 @@ def get_uboot_info(vgls):
         return None
 
     if os.path.exists(udir):
-        ver = _get_version_from_makefile(udir)
+        ver = _get_version_from_makefile(udir, with_extra=False)
     else:
         warn("U-Boot Config: Build directory does not exist.")
         warn("\tU-Boot build directory: %s" % udir)
