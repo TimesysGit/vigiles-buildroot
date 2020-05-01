@@ -52,6 +52,7 @@ endif 	# ($(VIGILES_GENERATE_INTERMEDIATE_FILES),Y)
 endif 	# ($(VIGILES_ENABLE_EXPERT),y)
 
 
+ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check:
 	@$(call MESSAGE,"Running Vigiles CVE Check")
 	(	\
@@ -59,5 +60,9 @@ vigiles-check:
 		$(vigiles-script)	\
 		$(vigiles-opts)		\
 	)
+else 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
+vigiles-check:
+
+endif 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 
 vigiles-check: target-finalize
