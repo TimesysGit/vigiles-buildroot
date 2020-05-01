@@ -186,7 +186,7 @@ def _uboot_config(vgls, udir):
             os.path.join(udir, 'include', 'autoconf.mk')
         )
     else:
-        dot_config = kconfig_in
+        dot_config = uconfig_in
         autoconf = ''
 
     if not os.path.exists(dot_config):
