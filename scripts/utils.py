@@ -80,9 +80,14 @@ def write_intm_json(vgls, name, d):
     if vgls['write_intm']:
         try:
             with open(f_path, 'w') as fd:
-                json.dump(d, fd,
-                          indent=4, separators=(',', ': '), sort_keys=True)
-                fd.write('\n')
+                print("%s" %
+                      json.dumps(
+                        d,
+                        indent=4,
+                        separators=(',', ': '),
+                        sort_keys=True),
+                      file=fd,
+                      flush=True)
         except Exception as e:
             print('Vigiles Warning: Could not write intermediate file.')
             print('\tFile Path: %s' % f_path)

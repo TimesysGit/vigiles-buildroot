@@ -85,6 +85,7 @@ br2_pkg_var_list = [
     'cve-product',
     'cve-version',
     'ignore-cves',
+    'rawname',
     'srcdir'
 ]
 
@@ -208,6 +209,16 @@ def _fixup_make_info(vgls):
     make_dict = vgls['make']
     pkg_dict = vgls['packages']
     providers = make_dict.get('providers', {})
+    rawname_fixups = defaultdict()
+
+    for name, pdict in pkg_dict.items():
+        rawname = pdict.get('rawname', name)
+        if rawname != name:
+            rawname_fixups[name] = rawname
+
+    for current, needed in rawname_fixups.items():
+        pkg_dict[needed] = pkg_dict.pop(current, {})
+        pkg_dict[needed]['name'] = needed
 
     for name, pdict in pkg_dict.items():
         if 'name' not in pdict:

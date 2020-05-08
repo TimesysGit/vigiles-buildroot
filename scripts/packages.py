@@ -20,6 +20,7 @@ import re
 from collections import defaultdict
 
 from utils import write_intm_json
+from utils import kconfig_to_py, py_to_kconfig
 from utils import dbg, info, warn
 
 def get_package_info(vgls):
@@ -76,7 +77,7 @@ def get_package_info(vgls):
                 if not f.endswith(".mk"):
                     continue
                 # Strip ending ".mk"
-                pkgname = f[:-3]
+                pkgname = kconfig_to_py(f[:-3])
                 if package_list and pkgname not in package_list:
                     continue
                 pkgpath = os.path.join(root, f)
