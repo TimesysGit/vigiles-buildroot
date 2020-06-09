@@ -124,6 +124,60 @@ config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
       will still function.
 
 
+comment "Customizing / Amending Vigiles Report"
+
+config BR2_EXTERNAL_VIGILES_INCLUDE_CSV
+    string "Additional Packages to Include in Report"
+    help
+      This option may be set to the pathname of a (CSV) file containing a list
+      of packages (and optionally their version(s)) to include in the Vigiles
+      Manifest and Report when checking for CVEs.
+
+      This is useful when additional software is included on the final system
+      that may not be built through the regular Buildroot process and therefore
+      wouldn't be included by default in the generated Vigiles Manifest.
+
+      If unsure, leave unset.
+
+config BR2_EXTERNAL_VIGILES_EXCLUDE_CSV
+    string "Packages to Exclude from Report"
+    help
+      This option may be set to the pathname of a (CSV) file containing a list
+      of packages to exclude from the Vigiles Manifest and Report when checking
+      for CVEs.
+
+      This is useful when packages that are built by default and are (or appear
+      to be) installed on the final system, but are considered erroneous or
+      superflous to the Vigiles CVE Report.
+
+      For example, a Linux Kernel may be built by default that is not used in
+      the final system, and instead replaced by an externally-built kernel.
+      The set of CVEs reported for the built-in kernel may then contain false-
+      positives, or worse: omit relevant CVEs.
+
+      See the companion option "Additional Packages to Include in Report" to
+      include packages in the Vigiles Manifest and Report that are built
+      externally.
+
+      If unsure, leave unset.
+
+config BR2_EXTERNAL_VIGILES_WHITELIST_CSV
+	string "CVEs to Whitelist in Report"
+	help
+	  This option may be set to the pathname of a (CSV) file containing a list
+	  of CVE IDs to mark as 'Whitelisted'.
+
+	  This is useful when there are CVEs associated with a package that are
+	  known to not affect a particular machine or configuration. Typically, a
+	  Buildroot package would specify these in their individual Makefile's
+	  IGNORE_CVES variable, but in the case that there are additional CVEs to
+	  ignore/whitelist, this option may be used.
+
+	  Please see the Vigiles Readme for more information.
+
+	  If unsure, leave unset.
+
+
 comment "Timesys LinuxLink Account Options"
 
 config BR2_EXTERNAL_VIGILES_KEY_FILE

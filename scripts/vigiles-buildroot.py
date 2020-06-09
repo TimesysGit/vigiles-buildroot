@@ -66,6 +66,14 @@ def parse_args():
     parser.add_argument('-u', '--uboot-config', dest='uconfig',
                         help='Custom U-Boot Config(s) to Use')
 
+    parser.add_argument('-A', '--additional-packages', dest='addl',
+                        help='File of Additional Packages to Include')
+    parser.add_argument('-E', '--exclude-packages', dest='excld',
+                        help='File of Packages to Exclude')
+    parser.add_argument('-W', '--whitelist-cves', dest='whtlst',
+                        help='File of CVEs to Ignore/Whitelist')
+
+
     parser.add_argument('-D', '--enable-debug', dest='debug',
                         help='Enable Debug Output',
                         action='store_true')
@@ -91,7 +99,10 @@ def parse_args():
             else 'auto',
         'uconfig': args.uconfig.strip() \
             if args.uconfig \
-            else 'auto'
+            else 'auto',
+        'addl': args.addl.strip() if args.addl else '',
+        'excld': args.excld.strip() if args.excld else '',
+        'whtlst': args.whtlst.strip() if args.whtlst else ''
     }
 
     if not vgls.get('odir', None):

@@ -16,6 +16,8 @@ import time
 from utils import mkdirhier
 from utils import dbg, info, warn
 
+from amendments import amend_manifest
+
 VIGILES_DIR = 'vigiles'
 VIGILES_DEFAULT_DISTRO = 'buildroot'
 VIGILES_DEFAULT_IMAGE = 'rootfs'
@@ -81,20 +83,6 @@ def _init_manifest(vgls):
     return build_dict
 
 
-def _build_whitelist(vgls):
-    pkg_dict = vgls['packages']
-
-    whitelist = set()
-    for pdict in pkg_dict.values():
-        wl = [
-            cve
-            for cve in pdict.get('ignore-cves', '').split(' ')
-            if cve
-        ]
-        whitelist.update(wl)
-    return sorted(list(whitelist))
-
-
 def _make_file_name(vgls, manifest_dict, suffix, ext):
     _machine = manifest_dict['machine']
     _hostname = manifest_dict['hostname']
@@ -114,7 +102,8 @@ def _report_name(vgls, manifest_dict):
 
 def write_manifest(vgls):
     final = _init_manifest(vgls)
-    final['whitelist'] = _build_whitelist(vgls)
+
+    amend_manifest(vgls, final)
 
     vgls['manifest'] = _manifest_name(vgls, final)
     vgls['report'] = _report_name(vgls, final)

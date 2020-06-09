@@ -151,6 +151,93 @@ alternative path.
 > (**```BR2_TARGET_UBOOT```**) is enabled.
 
 
+### Customizing / Amending the Vigiles Report
+
+In some cases, it's desirable to modify the CVE report that Vigiles generates.
+vigiles-buildroot supports the ability to _Include Additional Packages_,
+_Exclude Packages_ and _Whitelist Known CVEs_.
+
+All of these options are supported by a ```Kconfig``` option where a user may
+specify a CSV (comma-separated-value) file that describe the packages or CVEs.
+Each is described below.
+
+
+#### Including Additional Packages
+
+To include packages that are built outisde of the standard Buildroot process
+(and therefore wouldn't be included in the Vigiles CVE Report), the Kconfig
+option ```BR2_EXTERNAL_VIGILES_INCLUDE_CSV``` ("Additional Packages to Include
+in Report") may be set to the path of a CSV file. 
+
+>Example: ```$(HOME)/projects/buildroot/vigiles-additional-packages.csv```
+
+The CSV file consists of an optional header and the following fields:
+
+* Product - the CPE Name that packages use in CVEs
+* (optional) Version - the version of the package used.
+* (optional) License - the license of the package used
+
+The following example shows the accepted syntax for expressing extra packages:
+
+```sh
+$ cat $HOME/projects/buildroot/vigiles-additional-packages.csv
+product,version,license
+avahi,0.6
+bash,4.0
+bash,4.1,GPL 3.0
+busybox,
+udev,,"GPLv2.0+, LGPL-2.1+"
+```
+
+
+#### Excluding Packages
+
+In some cases, a more condensed CVE Report may be desired, so a list of
+specific packages to omit may be specified (for example: packages that only
+install data files).
+
+To exclude packages from the CVE Report, the Kconfig option
+```BR2_EXTERNAL_VIGILES_EXCLUDE_CSV``` may be set to the path of CSV file.
+
+>Example: ```$(HOME)/projects/buildroot/vigiles-exclude-packages.csv```
+
+The CSV file expects one package name per line. Any additional CSV fields are
+ignored.
+
+For example:
+
+```sh
+$ cat $HOME/projects/buildroot/vigiles-exclude-packages.csv
+linux-libc-headers
+opkg-utils
+packagegroup-core-boot
+```
+
+
+#### Whitelisting CVEs
+
+Some packages may have CVEs associated with them that are known to not affect
+a particular machine or configuration. Buildroot packages may express these
+in their respective Makefiles via the ```IGNORE_CVES``` variable. However,
+there may be additional CVEs to ignore/whitelist.
+
+A user may set the Kconfig option ```BR2_EXTERNAL_VIGILES_WHITELIST_CSV``` to
+the path of a CSV file containing a list of CVEs to omit from the Vigiles
+Report.
+
+>Example: ```$(HOME)/projects/buildroot/vigiles-cve-whitelist.csv```
+
+The CSV expects one CVE ID per line. Any additional fields will be ignored.
+
+For example:
+
+```sh
+$ cat $HOME/projects/buildroot/vigiles-cve-whitelist.csv
+
+```
+
+
+
 ### LinuxLink Credentials
 
 To specify an alternative location for the Timesys LinuxLink Key File, it can
