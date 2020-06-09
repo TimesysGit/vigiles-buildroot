@@ -14,6 +14,11 @@ import os
 import sys
 
 
+Vigiles_Debug = False
+Vigiles_Verbose = True
+Previous_Verbose = True
+
+
 # Case conversion helpers --
 # Make and Kconfig uses UPPERCASE_WITH_UNDERSCORES, but for dictionary
 # names, we use lowercase-with-dashes.
@@ -40,22 +45,49 @@ def kconfig_bool(value: str):
         return value
 
 
-def dbg(vgls, s):
-    if vgls['debug']:
-        print("Vigiles DEBUG: %s" % s, file=sys.stderr)
+def set_debug(enable=True):
+    global Vigiles_Debug, Vigiles_Verbose, Previous_Verbose
+    Vigiles_Debug = enable
+    if enable:
+        Previous_Verbose = Vigiles_Verbose
+        Vigiles_Verbose = True
+    else:
+        Vigiles_Verbose = Previous_Verbose
 
 
-def info(vgls, s):
-    print("Vigiles INFO: %s" % s, file=sys.stderr)
+def set_verbose(enable=True):
+    global Vigiles_Verbose, Previous_Verbose
+    Vigiles_Verbose = enable
+    Previous_Verbose = enable
 
 
-def warn(s):
-    print("Vigiles WARNING: %s" % s, file=sys.stderr)
-
-
-def err(s_list):
+def _print_list(tag, s_list, fp=sys.stdout):
     msg = '\n\t'.join(s_list)
-    print("Vigiles ERROR: %s" % msg, file=sys.stderr)
+    print("Vigiles %s: %s" % (tag, msg), file=fp)
+
+
+def dbg(msg, extra=[]):
+    global Vigiles_Debug
+    if Vigiles_Debug:
+        s_list = [msg] + extra
+        _print_list('DEBUG', s_list)
+
+
+def info(msg, extra=[]):
+    global Vigiles_Verbose
+    if Vigiles_Verbose:
+        s_list = [msg] + extra
+        _print_list('INFO', s_list)
+
+
+def warn(msg, extra=[]):
+    s_list = [msg] + extra
+    _print_list('WARNING', s_list, fp=sys.stderr)
+
+
+def err(msg, extra=[]):
+    s_list = [msg] + extra
+    _print_list('ERROR', s_list, fps=sys.stderr)
 
 
 def mkdirhier(directory):
@@ -89,6 +121,9 @@ def write_intm_json(vgls, name, d):
                       file=fd,
                       flush=True)
         except Exception as e:
-            print('Vigiles Warning: Could not write intermediate file.')
-            print('\tFile Path: %s' % f_path)
-            print('\tError: %s' % e)
+            warn([
+                    "Could not write intermediate file.",
+                    "File Path: %s" % f_path,
+                    "Error: %s" % e,
+                 ]
+            )

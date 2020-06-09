@@ -123,7 +123,7 @@ def write_manifest(vgls):
 
     mkdirhier(vgls['vdir'])
 
-    info(vgls, "Writing Manifest to %s" % vgls['manifest'])
+    info("Writing Manifest to %s" % vgls['manifest'])
     with open(vgls['manifest'], 'w') as f:
         json.dump(final, f, indent=4, separators=(',', ': '), sort_keys=True)
         f.write('\n')

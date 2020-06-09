@@ -48,8 +48,12 @@ def _get_version_from_makefile(sdir, with_extra=True):
                     v['extra'] = val
             f_in.close()
     except Exception as e:
-        warn("Could not read/parse Makefile: %s." % makefile_path)
-        print("\tError: %s" % e)
+        warn("Versions: Could not read/parse Makefile.",
+            [
+                "Path: %s." % makefile_path,
+                "Error: %s" % e
+            ]
+        )
         return None
 
     if v['major'] and v['minor']:
@@ -102,19 +106,22 @@ def _kernel_config(vgls, kdir) -> list:
         dot_config = kconfig_in
 
     if not os.path.exists(dot_config):
-        print("Kernel .config file does not exist.")
-        print("\tFile: %s" % kconfig_in)
-        print("\tKernel .config filtering will be disabled.")
+        warn("Kernel .config file does not exist.",
+            [
+                "File: %s" % kconfig_in,
+                "Kernel .config filtering will be disabled."
+            ]
+        )
         return None
 
-    dbg(vgls, "Kernel Config: Using %s" % dot_config)
+    info("Kernel Config: Using %s" % dot_config)
 
     config_options = []
     dot_config_options = _get_config_opts(dot_config, preamble_length=4)
 
     if dot_config_options:
         config_options.extend(dot_config_options)
-        dbg(vgls, "Kernel Config: %d Options" % len(config_options))
+        dbg("Kernel Config: %d Options" % len(config_options))
     return config_options
 
 
@@ -137,9 +144,12 @@ def _write_config(vgls, pkg_dict, config_options):
             print('\n'.join(config_options), file=config_out, flush=True)
             print('\n', file=config_out, flush=True)
     except Exception as e:
-        warn("Could not write .config output.")
-        warn("\tFile: %s" % config_file)
-        warn("\tError: %s" % e)
+        warn("Could not write .config output.",
+            [
+                "File: %s" % config_file,
+                "Error: %s" % e,
+            ]
+        )
         config_file = 'none'
     return config_file
 
@@ -157,11 +167,10 @@ def get_kernel_info(vgls):
     if os.path.exists(kdir):
         ver = _get_version_from_makefile(kdir)
     else:
-        warn("Linux Kernel: Build directory does not exist.")
-        warn("\tLinux Kernel build directory: %s" % kdir)
+        warn("Linux Kernel: Build directory does not exist: %s" % kdir)
         return None
 
-    info(vgls, "Kernel Version: %s" % ver)
+    dbg("Kernel Version: %s" % ver)
     linux_dict['cve-version'] = ver
 
     kconfig_out = 'none'
@@ -169,8 +178,8 @@ def get_kernel_info(vgls):
     if config_opts:
         kconfig_out = _write_config(vgls, linux_dict, config_opts)
     if kconfig_out != 'none':
-        dbg(vgls, "Kernel Config: Wrote %d options to %s" %
-             (len(config_opts), kconfig_out))
+        dbg("Kernel Config: Wrote %d options to %s" %
+            (len(config_opts), kconfig_out))
     vgls['kconfig'] = kconfig_out
 
 
@@ -195,21 +204,21 @@ def _uboot_config(vgls, udir):
         warn("\tU-Boot .config filtering will be disabled.")
         return None
 
-    dbg(vgls, "U-Boot Config: Using %s %s" % (dot_config, autoconf))
+    info("U-Boot Config: Using %s %s" % (dot_config, autoconf))
 
     config_options = []
     dot_config_options = _get_config_opts(dot_config, preamble_length=4)
     if dot_config_options:
         config_options.extend(dot_config_options)
-        dbg(vgls, "U-Boot Config: %d .config Options" %
-              len(dot_config_options))
+        dbg("U-Boot Config: %d .config Options" %
+            len(dot_config_options))
 
     if autoconf:
         autoconf_options = _get_config_opts(autoconf)
         if autoconf_options:
             config_options.extend(autoconf_options)
-            dbg(vgls, "U-Boot Config: %d autoconf Options" %
-                  len(autoconf_options))
+            dbg("U-Boot Config: %d autoconf Options" %
+                len(autoconf_options))
 
     return config_options
 
@@ -232,13 +241,13 @@ def get_uboot_info(vgls):
         return None
 
     uboot_dict['cve-version'] = ver
-    info(vgls, "U-Boot Version: %s" % ver)
+    dbg("U-Boot Version: %s" % ver)
 
     uconfig_out = 'none'
     config_opts = _uboot_config(vgls, udir)
     if config_opts:
         uconfig_out = _write_config(vgls, uboot_dict, config_opts)
     if uconfig_out != 'none':
-        dbg(vgls, "U-Boot Config: Wrote %d options to %s" %
-             (len(config_opts), uconfig_out))
+        dbg("U-Boot Config: Wrote %d options to %s" %
+            (len(config_opts), uconfig_out))
     vgls['uconfig'] = uconfig_out

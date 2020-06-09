@@ -42,12 +42,15 @@ optional arguments:
 import argparse
 import os
 import sys
+import json
 
 from buildroot import get_config_options, get_make_info
 from manifest import VIGILES_DIR, write_manifest
 from packages import get_package_info
 from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
+
+from utils import set_debug, set_verbose
 from utils import dbg, info, warn
 
 def parse_args():
@@ -74,8 +77,9 @@ def parse_args():
                         action='store_false')
     args = parser.parse_args()
 
+    set_debug(args.debug)
+
     vgls = {
-        'debug': args.debug,
         'write_intm': args.write_intm,
         'do_check': args.do_check,
         'topdir': args.idir.strip() \
@@ -95,31 +99,34 @@ def parse_args():
     if not vgls.get('bdir', None):
         vgls['bdir'] = os.path.join(vgls['odir'], 'build')
     vgls['vdir'] = os.path.join(vgls['odir'], VIGILES_DIR)
+
+    dbg("Vigiles Buildroot Config: %s" %
+        json.dumps(vgls, indent=4, sort_keys=True))
     return vgls
 
 
 def collect_metadata(vgls):
-    dbg(vgls, "Getting Config Info ...")
+    dbg("Getting Config Info ...")
     vgls['config'] = get_config_options(vgls)
     if not vgls['config']:
         sys.exit(1)
 
-    dbg(vgls, "Getting Package List ...")
+    dbg("Getting Package List ...")
     vgls['packages'] = get_package_info(vgls)
     if not vgls['packages']:
         sys.exit(1)
 
-    dbg(vgls, "Getting Make Variables ...")
+    dbg("Getting Make Variables ...")
     vgls['make'] = get_make_info(vgls)
     if not vgls['make']:
         sys.exit(1)
 
     if 'linux' in vgls['packages']:
-        dbg(vgls, "Getting Kernel Info ...")
+        dbg("Getting Kernel Info ...")
         get_kernel_info(vgls)
 
     if 'uboot' in vgls['packages']:
-        dbg(vgls, "Getting U-Boot Info ...")
+        dbg("Getting U-Boot Info ...")
         get_uboot_info(vgls)
 
 

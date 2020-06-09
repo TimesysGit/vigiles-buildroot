@@ -50,7 +50,7 @@ def get_config_options(vgls):
         ])
         return None
 
-    dbg(vgls, "Using Buildroot Config at %s" % dot_config)
+    dbg("Using Buildroot Config at %s" % dot_config)
     try:
         with open(dot_config, 'r') as config_in:
             config_options = [
@@ -72,7 +72,7 @@ def get_config_options(vgls):
         value = kconfig_bool(value.replace('"', ''))
         config_dict[key] = value
 
-    dbg(vgls, "Buildroot Config: %d Options" % len(config_dict.keys()))
+    dbg("Buildroot Config: %d Options" % len(config_dict.keys()))
     write_intm_json(vgls, 'config-vars', config_dict)
     return config_dict
 
@@ -201,7 +201,7 @@ def _sanitize_version(vgls, version_in):
         if not sha_match \
         else version_in.replace(sha_match.group(), '')
     if version_out != version_in:
-        info(vgls, "CVE Version Fixed Up: %s -> %s" % (version_in, version_out))
+        info("CVE Version Fixed Up: %s -> %s" % (version_in, version_out))
     return version_out
 
 

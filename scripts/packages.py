@@ -14,6 +14,7 @@
 ###############################################################
 
 import fnmatch
+import json
 import os
 import re
 
@@ -40,8 +41,8 @@ def get_package_info(vgls):
             config_pkgs.append('linux')
         if config_dict.get('target-uboot', False):
             config_pkgs.append('uboot')
-        dbg(vgls, "Buildroot Config: %d possible packages (w/ kernel + uboot)"
-              % len(config_pkgs))
+        dbg("Buildroot Config: %d possible packages (w/ kernel + uboot)"
+            % len(config_pkgs))
         return config_pkgs
 
     def _package_makefiles(package_list):
@@ -90,7 +91,7 @@ def get_package_info(vgls):
                 if skip:
                     continue
                 pkg_dict[pkgname] = os.path.relpath(pkgpath)
-        info(vgls, "Found %d packages" % len(pkg_dict.keys()))
+        dbg("Found %d packages" % len(pkg_dict.keys()))
         return pkg_dict
 
 
@@ -130,14 +131,22 @@ def get_package_info(vgls):
             for match in cve_match.finditer(patch_text):
                 # Get only the CVEs without the "CVE: " tag
                 cves = patch_text[match.start() + 5:match.end()]
+                dbg("Patches: Matched CVEs for Someone: %s" % json.dumps(cves))
                 for cve in cves.split():
                     found_cves.append(cve)
+
+            if len(found_cves):
+                dbg("Patches: Found CVEs for Someone: %s" % json.dumps(found_cves))
 
             for cve in found_cves:
                 entry = patched_dict.get(cve, list())
                 if patch_name not in entry:
                     entry.append(patch_name)
                 patched_dict.update({cve: entry})
+
+        if len(patched_dict.keys()):
+            import json
+            dbg("Patches: Patched CVEs for Someone: %s" % json.dumps(patched_dict))
 
         return {
             key: sorted(patched_dict[key])
@@ -165,6 +174,23 @@ def get_package_info(vgls):
                 os.path.basename(p) for p in patch_list
             ])
             pkg['patched_cves'] = _patched_cves(patch_list)
+            if pkg['patched_cves']:
+                dbg("Patched CVEs for %s" % pkg['name'],
+                    [
+                        "Total Patches: %d" % len(patch_list),
+                        "Patch List: %s" % json.dumps(
+                            patch_list,
+                            indent=12,
+                            sort_keys=True
+                        ),
+                        "CVEs: %s" % json.dumps(
+                            pkg['patched_cves'],
+                            indent=12,
+                            sort_keys=True
+                        )
+                    ]
+                )
+
 
 
     pkg_list = _config_packages(config_dict)
