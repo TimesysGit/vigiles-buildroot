@@ -40,6 +40,21 @@ def _get_machine_name(vgls):
 
 
 def _init_manifest(vgls):
+    def _stripped_packages(pkgs):
+        excluded_fields = [
+            'builddir',
+            'is-virtual',
+            'srcdir'
+        ]
+        return {
+            pkgname: {
+                k.replace('-', '_'): v
+                for k, v in pdict.items()
+                if v
+                and k not in excluded_fields
+            } for pkgname, pdict in pkgs.items()
+        }
+
     try:
         _commit = subprocess.check_output([
                 'git', 'rev-parse',
@@ -61,25 +76,9 @@ def _init_manifest(vgls):
         'image': VIGILES_DEFAULT_IMAGE,
         'machine': _get_machine_name(vgls),
         'manifest_version': VIGILES_MANIFEST_VERSION,
+        'packages': _stripped_packages(vgls['packages'])
     }
     return build_dict
-
-
-def _strip_package_dict(vgls):
-    excluded_fields = [
-        'builddir',
-        'is-virtual',
-        'srcdir'
-    ]
-    pkg_dict = {
-        pkgname: {
-            k.replace('-', '_'): v
-            for k, v in pdict.items()
-            if v
-            and k not in excluded_fields
-        } for pkgname, pdict in vgls['packages'].items()
-    }
-    return pkg_dict
 
 
 def _build_whitelist(vgls):
@@ -115,7 +114,6 @@ def _report_name(vgls, manifest_dict):
 
 def write_manifest(vgls):
     final = _init_manifest(vgls)
-    final['packages'] = _strip_package_dict(vgls)
     final['whitelist'] = _build_whitelist(vgls)
 
     vgls['manifest'] = _manifest_name(vgls, final)
