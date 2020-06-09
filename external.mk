@@ -33,6 +33,10 @@ vigiles-env = \
 
 vigiles-opts = -B $(CANONICAL_CURDIR) -b $(BUILD_DIR) -o $(CANONICAL_O)
 
+ifeq ($(VIGILES_DEBUG_OUTPUT),y)
+vigiles-opts += -D
+endif
+
 ifneq ($(vigiles-kconfig),auto)
 vigiles-opts += -k $(vigiles-kconfig)
 endif

@@ -181,6 +181,13 @@ config VIGILES_ENABLE_EXPERT
 
       If unsure, say N.
 
+config VIGILES_DEBUG_OUTPUT
+    bool "Enable Verbose Console Output"
+    default n
+    help
+      This option enables "Debug Output" on the command-line when running the
+      vigiles-buildroot.py script.
+
 config VIGILES_METADATA_ONLY
     bool "Generate Manifest but don't Submit for Checking"
     depends on VIGILES_ENABLE_EXPERT
