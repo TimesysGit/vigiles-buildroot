@@ -74,16 +74,26 @@ endif 	# ($(VIGILES_ENABLE_EXPERT),y)
 
 
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
-vigiles-check:
+vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")
 	(	\
 		$(vigiles-env)		\
 		$(vigiles-script)	\
 		$(vigiles-opts)		\
 	)
+
+vigiles-image: target-finalize
+	@$(call MESSAGE,"Generating Vigiles CVE Manifest")
+	(	\
+		$(vigiles-env)		\
+		$(vigiles-script)	\
+		$(vigiles-opts)		\
+		--metadata-only 	\
+	)
+
 else 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
-vigiles-check:
+vigiles-check vigiles-image:
+	@$(call MESSAGE,"Vigiles Support is not Enabled.")
 
 endif 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 
-vigiles-check: target-finalize
