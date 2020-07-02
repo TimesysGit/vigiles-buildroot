@@ -24,26 +24,41 @@ from utils import write_intm_json
 from utils import kconfig_to_py, py_to_kconfig
 from utils import dbg, info, warn
 
+
 def get_package_info(vgls):
     config_dict = vgls.get('config', {})
     pkg_dict = defaultdict(lambda: defaultdict(dict))
 
     def _config_packages(config_dict):
-        config_pkgs = []
+        config_pkgs = set()
+
+        fw_list =  [
+            '-'.join(['target', entry.name])
+            for entry in 
+            os.scandir(os.path.join(vgls['topdir'], 'boot'))
+            if entry.is_dir()
+        ]
 
         for key, value in config_dict.items():
-            if key.startswith('package-') and value is True:
+            if value is not True:
+                continue
+
+            if key.startswith('package-'):
                 if not key.endswith('-supports'):
                     pkg = key[8:]
-                    config_pkgs.append(pkg)
+                    config_pkgs.add(pkg)
+            elif key in fw_list:
+                pkg = key[7:]
+                dbg("Buildroot Config -- Adding Firmware: %s" % pkg)
+                config_pkgs.add(pkg)
+            elif key == 'linux-kernel':
+                pkg = 'linux'
+                dbg("Buildroot Config -- Adding Kernel: %s" % pkg)
+                config_pkgs.add(pkg)
 
-        if config_dict.get('linux-kernel', False):
-            config_pkgs.append('linux')
-        if config_dict.get('target-uboot', False):
-            config_pkgs.append('uboot')
-        dbg("Buildroot Config: %d possible packages (w/ kernel + uboot)"
+        dbg("Buildroot Config: %d possible packages (including firmware)"
             % len(config_pkgs))
-        return config_pkgs
+        return sorted(list(config_pkgs))
 
     def _package_makefiles(package_list):
         """
