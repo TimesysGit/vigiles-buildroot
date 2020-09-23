@@ -240,7 +240,7 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
     try:
         email, key = llapi.read_keyfile(key_file)
         # It is fine if either of these are none, they will just default
-        product_token = llapi.read_dashboard_config(dashboard_config)
+        dashboard_tokens = llapi.read_dashboard_config(dashboard_config)
     except Exception as e:
         print('Error: %s\n' % e)
         print(get_usage())
@@ -296,8 +296,9 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
     request = {
         'manifest': manifest_data,
         'subscribe': False,
-        'product_token': product_token
-    }
+        'product_token': dashboard_tokens.get('product', ''),
+        'folder_token': dashboard_tokens.get('folder', ''),
+        }
 
     if kernel_config:
         request['kconfig'] = kernel_config

@@ -210,18 +210,25 @@ config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
     depends on VIGILES_ENABLE_DASHBOARD_CONFIG
     default "$(HOME)/timesys/dashboard_config"
     help
-      By default your manifest will be uploaded under the "Private Workspace"
-      product on your Vigiles Dashboard.
+      By default your manifest will be uploaded to your "Private Workspace"
+      Product on the Vigiles Dashboard. This can be changed by downloading the
+      "Dashboard Config" for an alternative Product and/or Folder.
 
-      To upload your manifest to a particular product or existing manifest on
-      your Vigiles Dashboard, download the associated Dashboard Config and set
-      this option to the path of that file.
+      Dashboard Config files will be downloaded by default to e.g.
+      ```"${HOME}/Downloads/dashboard_config"```. Once moving and/or renaming
+      it as necessary, you can control the behavior of Vigiles for Buildroot
+      by specifying the path here.
 
-      Dashboard Configs downloaded from the Products Page will upload new
-      manifests to the associated product with a default name.
+      New Products can be defined by clicking on the "New Product" product
+      link and specifying a name. To download the Dashboard Config for the
+      top-level folder of that Product, click on the "Product Settings" link
+      and then the "Download Dashboard Config" button.
 
-      The link can be found under the Actions column for each product.
-      Note: Click on "New Product" if you have not yet created one.
+      Once a new product is created, sub-folders may be created by clicking on
+      the "Create Folder" and specifying a name. The Dashboard Config for that
+      Folder (in that Product) may be downloaded by first clicking on/opening
+      the Folder, then clicking the "Folder Settings" link and finally the
+      "Download Dashboard Config" button.
 
 
 comment "Advanced Vigiles / Debug Options"
