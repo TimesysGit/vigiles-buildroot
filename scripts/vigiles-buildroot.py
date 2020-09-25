@@ -46,7 +46,7 @@ import json
 
 from buildroot import get_config_options, get_make_info
 from manifest import VIGILES_DIR, write_manifest
-from packages import get_package_info
+import packages
 from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
 
@@ -123,7 +123,7 @@ def collect_metadata(vgls):
         sys.exit(1)
 
     dbg("Getting Package List ...")
-    vgls['packages'] = get_package_info(vgls)
+    vgls['packages'] = packages.get_package_info(vgls)
     if not vgls['packages']:
         sys.exit(1)
 

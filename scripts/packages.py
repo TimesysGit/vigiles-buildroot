@@ -111,8 +111,6 @@ def get_package_info(vgls):
 
 
     def _patched_cves(src_patches):
-        import re
-
         patched_dict = dict()
 
         cve_match = re.compile("CVE:( CVE\-\d{4}\-\d+)+")
@@ -160,7 +158,6 @@ def get_package_info(vgls):
                 patched_dict.update({cve: entry})
 
         if len(patched_dict.keys()):
-            import json
             dbg("Patches: Patched CVEs for Someone: %s" % json.dumps(patched_dict))
 
         return {
