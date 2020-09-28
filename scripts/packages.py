@@ -113,7 +113,7 @@ def get_package_info(vgls):
     def _patched_cves(src_patches):
         patched_dict = dict()
 
-        cve_match = re.compile("CVE:( CVE\-\d{4}\-\d+)+")
+        cve_match = re.compile("CVE\-\d{4}\-\d+")
 
         # Matches last CVE-1234-211432 in the file name, also if written
         # with small letters. Not supporting multiple CVE id's in a single
@@ -140,13 +140,9 @@ def get_package_info(vgls):
                     with open(patch_path, "r", encoding="iso8859-1") as f:
                         patch_text = f.read()
 
-            # Search for one or more "CVE: " lines
+            # Search for one or more "CVE-XXXX-XXXX+" lines
             for match in cve_match.finditer(patch_text):
-                # Get only the CVEs without the "CVE: " tag
-                cves = patch_text[match.start() + 5:match.end()]
-                dbg("Patches: Matched CVEs for Someone: %s" % json.dumps(cves))
-                for cve in cves.split():
-                    found_cves.append(cve)
+                found_cves.append(match.group())
 
             if len(found_cves):
                 dbg("Patches: Found CVEs for Someone: %s" % json.dumps(found_cves))
