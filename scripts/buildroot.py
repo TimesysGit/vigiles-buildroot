@@ -81,10 +81,10 @@ br2_pkg_var_list = [
     'builddir',
     'is-virtual',
     'license',
-    'version',
     'cve-product',
     'cve-version',
     'ignore-cves',
+    'version',
     'rawname',
     'srcdir'
 ]
