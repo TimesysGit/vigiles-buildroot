@@ -154,7 +154,7 @@ def _get_package_whitelist(pkg_dict):
     for pdict in pkg_dict.values():
         wl = [
             cve
-            for cve in pdict.get('ignore-cves', '').split(' ')
+            for cve in pdict.get('ignore_cves', '').split(' ')
             if cve
         ]
         whitelist.update(wl)
@@ -178,4 +178,6 @@ def amend_manifest(vgls, manifest):
 
     whtlst_cves = _build_whitelist(vgls, manifest)
     if whtlst_cves:
+        dbg("Ignoring CVEs: %s" %
+            json.dumps(whtlst_cves, indent=4, sort_keys=True))
         manifest['whitelist'] = sorted(whtlst_cves)
