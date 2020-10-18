@@ -77,16 +77,19 @@ def get_config_options(vgls):
     return config_dict
 
 
-br2_pkg_var_list = [
+br2_internal_pkg_vars = [
     'builddir',
     'is-virtual',
-    'license',
-    'version',
+    'rawname',
+    'srcdir'
+]
+
+br2_user_pkg_vars = [
     'cve-product',
     'cve-version',
     'ignore-cves',
-    'rawname',
-    'srcdir'
+    'license',
+    'version',
 ]
 
 def _get_make_variables(packages):
@@ -95,7 +98,7 @@ def _get_make_variables(packages):
     for p in packages:
         package_vars.extend([
             '-'.join([p, var])
-            for var in br2_pkg_var_list
+            for var in br2_internal_pkg_vars + br2_user_pkg_vars
         ])
 
     br2_single = [
@@ -179,11 +182,37 @@ def _transform_make_info(vgls, variable_list):
                 make_dict['br2']['meta'][key] = value
             continue
 
-        for pkgkey in br2_pkg_var_list:
+        #
+        # The following is done in 2 loops to first gather the automatically
+        # set variables by the build system to prime the list of known
+        # packages; then to gather the variables that can be over-ridden
+        # by the package makefiles, checking if the package is already known
+        # in the 2nd.
+        # This is done in case there are conflicts where the name of one
+        # variable is a subset of another and separated with the only
+        # delimeter we can use ('_' in makefiles, transformed to '-' here),
+        # and because we don't want to rely on the order of the list of 
+        # variables above for priority or the order of the incoming strings
+        # to parse.
+        # Think 'foo-version' vs. 'foo-cve-version' -- if 'version' is in
+        # the list first, but 'foo-cve-version' is parsed first, then a bogus
+        # 'foo-cve' package would be added.
+        # Sure, if everything is guaranteed to be in alphabetical order, that
+        # particular example is moot, but will that always be the case for
+        # what we need to parse (i.e. it's 'future-proof').
+        for pkgkey in br2_internal_pkg_vars:
             pkgvar = '-' + pkgkey
             if key.endswith(pkgvar):
                 pkgname = key[:-len(pkgvar)]
-                make_dict[pkgkey][pkgname] = value
+                pkg_dict[pkgname][pkgkey] = value
+                break
+
+        for pkgkey in br2_user_pkg_vars:
+            pkgvar = '-' + pkgkey
+            if key.endswith(pkgvar):
+                pkgname = key[:-len(pkgvar)]
+                if pkgname not in pkg_dict:
+                    continue
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
