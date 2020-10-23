@@ -322,15 +322,13 @@ on the Vigiles Dashboard. This can be changed by downloading the "Dashboard
 Config" for an alternative Product and/or Folder.
 
 Dashboard Config files will be downloaded by default to e.g.
-```"${HOME}/Downloads/dashboard_config"```. Once moving and/or renaming it as
+```"${HOME}/Downloads/<product name>_<folder name>_config"```. Once moving and/or renaming it as
 necessary, you can control the behavior of Vigiles for Buildroot by setting
 the config variable above.
 
->New Products can be defined by clicking on the "New Product" product link and specifying a name. To download the Dashboard Config for the top-level folder of that Product, click on the "Product Settings" link and then the "Download Dashboard Config" button.
+>New Products can be defined by clicking on the "New Product" product link and specifying a name. To download the Dashboard Config for the top-level folder of that Product, click on the "Product Settings" link and you will see a preview of the dashboard config file. You can copy the contents and create the file for yourself or choose to download it with the buttons on the right.
 
->Once a new product is created, sub-folders may be created by clicking on the "Create Folder" and specifying a name. The Dashboard Config for that Folder (in that Product) may be downloaded by first clicking on/opening the Folder, then clicking the "Folder Settings" link and finally the "Download Dashboard Config" button.
-
-
+>Once a new product is created, sub-folders may be created by clicking on the "Create Folder" and specifying a name. The Dashboard Config for that  Folder (in that Product) may be downloaded by first clicking on/opening the Folder, then clicking the "Folder Settings" link and choosing to copy or download the config for that folder.
 
 ### Dynamic subfolder creation
 ```
