@@ -204,6 +204,8 @@ def _transform_make_info(vgls, variable_list):
             pkgvar = '-' + pkgkey
             if key.endswith(pkgvar):
                 pkgname = key[:-len(pkgvar)]
+                if pkgkey == 'rawname':
+                    value = value.split(' ')[0]
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
@@ -213,6 +215,8 @@ def _transform_make_info(vgls, variable_list):
                 pkgname = key[:-len(pkgvar)]
                 if pkgname not in pkg_dict:
                     continue
+                if pkgkey not in ['license', 'ignore-cves']:
+                    value = value.split(' ')[0]
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
@@ -252,13 +256,13 @@ def _fixup_make_info(vgls):
     for name, pdict in pkg_dict.items():
         if 'name' not in pdict:
             pkg_dict[name]['name'] = name
-        if 'version' not in pdict:
+        if not pdict.get('version', ''):
             pkg_dict[name]['version'] = 'unset'
         if 'license' not in pdict:
             pkg_dict[name]['license'] = 'unknown'
         if 'cve-product' not in pdict:
             pkg_dict[name]['cve-product'] = name
-        if 'cve-version' not in pdict:
+        if not pdict.get('cve-version', ''):
             pkg_dict[name]['cve-version'] = pdict['version']
 
     for name, pdict in pkg_dict.items():

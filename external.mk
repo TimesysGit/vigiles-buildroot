@@ -1,6 +1,12 @@
 
 vigiles-script-name	:= vigiles-buildroot.py
+
+ifneq ($(BR2_EXTERNAL_vigiles_PATH),)
 vigiles-script-dir	:= $(BR2_EXTERNAL_vigiles_PATH)/scripts
+else
+vigiles-script-dir	:= $(BR2_EXTERNAL)/scripts
+endif
+
 vigiles-script 		:= $(vigiles-script-dir)/$(vigiles-script-name)
 
 
@@ -31,7 +37,21 @@ vigiles-env = \
 	VIGILES_KEY_FILE="$(vigiles-key)" \
 	VIGILES_DASHBOARD_CONFIG="$(vigiles-dashboard)"
 
-vigiles-opts = -B $(CANONICAL_CURDIR) -b $(BUILD_DIR) -o $(CANONICAL_O)
+vigiles-opts = -b $(BUILD_DIR)
+
+
+ifneq ($(CANONICAL_CURDIR),)
+vigiles-opts += -B $(CANONICAL_CURDIR)
+else
+vigiles-opts += -B $(CURDIR)
+endif
+
+ifneq ($(CANONICAL_O),)
+vigiles-opts += -o $(CANONICAL_O)
+else
+vigiles-opts += -o $(O)
+endif
+
 
 ifeq ($(VIGILES_DEBUG_OUTPUT),y)
 vigiles-opts += -D
