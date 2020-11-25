@@ -23,22 +23,20 @@ vigiles-uconfig 	:= none
 endif
 
 
-vigiles-key	:= $(BR2_EXTERNAL_VIGILES_KEY_FILE)
-
-
-ifeq ($(VIGILES_ENABLE_DASHBOARD_CONFIG),y)
-vigiles-dashboard	:= $(BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG)
-else
-vigiles-dashboard	:=
-endif
-
-
-vigiles-env = \
-	VIGILES_KEY_FILE="$(vigiles-key)" \
-	VIGILES_DASHBOARD_CONFIG="$(vigiles-dashboard)"
 
 vigiles-opts = -b $(BUILD_DIR)
 
+vigiles-key-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_KEY_FILE))
+ifneq ($(vigiles-key-file),)
+vigiles-opts	+= -K $(vigiles-key-file)
+endif
+
+ifeq ($(VIGILES_ENABLE_DASHBOARD_CONFIG),y)
+vigiles-dashboard	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG))
+ifneq ($(vigiles-dashboard),)
+vigiles-opts	+= -C $(vigiles-dashboard)
+endif
+endif
 
 ifneq ($(CANONICAL_CURDIR),)
 vigiles-opts += -B $(CANONICAL_CURDIR)
@@ -97,7 +95,6 @@ ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")
 	(	\
-		$(vigiles-env)		\
 		$(vigiles-script)	\
 		$(vigiles-opts)		\
 	)
@@ -105,7 +102,6 @@ vigiles-check: target-finalize
 vigiles-image: target-finalize
 	@$(call MESSAGE,"Generating Vigiles CVE Manifest")
 	(	\
-		$(vigiles-env)		\
 		$(vigiles-script)	\
 		$(vigiles-opts)		\
 		--metadata-only 	\

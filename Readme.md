@@ -240,26 +240,41 @@ $ cat $HOME/projects/buildroot/vigiles-cve-whitelist.csv
 
 ### LinuxLink Credentials
 
-To specify an alternative location for the Timesys LinuxLink Key File, it can
-be specified with the string **```BR2_EXTERNAL_VIGILES_KEY_FILE```**.
+To specify an alternative location for the Timesys LinuxLink Key File, (default: 
+```$(HOME)/timesys/linuxlink_key```) it can be set with the string
+**```BR2_EXTERNAL_VIGILES_KEY_FILE```**.
 
 
 ```
                *** Timesys LinuxLink Account Options ***
-        $(HOME)/timesys/linuxlink_key) Timesys LinuxLink Key Location
+        ($(HOME)/timesys/linuxlink_key) Timesys LinuxLink Key Location
 ```
+
+>Whether the default is used, or if this Kconfig option is set, it will be
+>overridden by the environment variable VIGILES_KEY_FILE.
+>A developer may set this on the command line to use a personal/local key
+>without having to change a shared defconfig for a board.
+
+
 
 ### Vigiles Dashboard Configuration
 
 A custom LinuxLink Dashboard configuration can be set by first
 enabling **```VIGILES_ENABLE_DASHBOARD_CONFIG```** and specifying the path in
-the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**.
+the string **```BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG```**. If unset, a default
+path will be used (```$(HOME)/timesys/dashboard_config```)
 
 ```
                 *** Timesys Vigiles Dashboard Options ***
          [*]   Use a custom Vigiles Dashboard Configuration
          ($(HOME)/timesys/dashboard_config) Timesys Vigiles Dashboard Config Location
 ```
+
+>Whether the default is used, or if this Kconfig option is set, it will be
+>overridden by the environment variable VIGILES_DASHBOARD_CONFIG.
+>A developer may set this on the command line to use their personal/private
+>Dashboard settings.
+
 
 By default your manifest will be uploaded to your "Private Workspace" Product
 on the Vigiles Dashboard. This can be changed by downloading the "Dashboard

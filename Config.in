@@ -184,7 +184,12 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
     string "Timesys LinuxLink Key Location"
     default "$(HOME)/timesys/linuxlink_key"
     help
-      This option specifies the location of your Timesys LinuxLink Key File.
+      This option specifies the location of your default Timesys LinuxLink Key
+      File, if it is different than $(HOME)/timesys/linuxlink_key.
+
+      This option can be overridden on the command line by setting the
+      environment variable VIGILES_KEY_FILE to the location of an alternate Key
+      File.
 
       The Key File is needed to enable full reporting of the applicable CVEs
       on the Target. One can be obtained by registering for a free (or
@@ -210,6 +215,13 @@ config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
     depends on VIGILES_ENABLE_DASHBOARD_CONFIG
     default "$(HOME)/timesys/dashboard_config"
     help
+      This option specifies the location of your default Timesys Dashboard
+      Config File, if it is different than $(HOME)/timesys/dashboard_config.
+
+      This option can be overridden on the command line by setting the
+      environment variable VIGILES_DASHBOARD_CONFIG to the location of an
+      alternate Dashboard Config file.
+
       By default your manifest will be uploaded to your "Private Workspace"
       Product on the Vigiles Dashboard. This can be changed by downloading the
       "Dashboard Config" for an alternative Product and/or Folder.

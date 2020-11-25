@@ -73,6 +73,10 @@ def parse_args():
     parser.add_argument('-W', '--whitelist-cves', dest='whtlst',
                         help='File of CVEs to Ignore/Whitelist')
 
+    parser.add_argument('-K', '--keyfile', dest='llkey',
+                        help='Location of LinuxLink credentials file')
+    parser.add_argument('-C', '--dashboard-config', dest='lldashboard',
+                        help='Location of LinuxLink Dashboard Config file')
 
     parser.add_argument('-D', '--enable-debug', dest='debug',
                         help='Enable Debug Output',
@@ -102,7 +106,9 @@ def parse_args():
             else 'auto',
         'addl': args.addl.strip() if args.addl else '',
         'excld': args.excld.strip() if args.excld else '',
-        'whtlst': args.whtlst.strip() if args.whtlst else ''
+        'whtlst': args.whtlst.strip() if args.whtlst else '',
+        'llkey': args.llkey.strip() if args.llkey else '',
+        'lldashboard': args.lldashboard.strip() if args.lldashboard else ''
     }
 
     if not vgls.get('odir', None):
@@ -142,12 +148,6 @@ def collect_metadata(vgls):
 
 
 def run_check(vgls):
-    manifest_path = vgls['manifest']
-    if not manifest_path or not os.path.exists(manifest_path):
-        print("ERROR: Manifest does not exist at expected path.")
-        print("\tPath: %s" % manifest_path)
-        sys.exit(1)
-
     kconfig_path = ''
     _kconfig = vgls.get('kconfig', 'none')
     if _kconfig != 'none' and os.path.exists(_kconfig):
@@ -158,13 +158,15 @@ def run_check(vgls):
     if _uconfig != 'none' and os.path.exists(_uconfig):
         uconfig_path = _uconfig
 
-    report_path = vgls['report']
-    vigiles_request(
-        manifest_path,
-        kconfig_path,
-        uconfig_path,
-        report_path
-    )
+    vgls_chk = {
+        'keyfile': vgls.get('llkey', ''),
+        'dashboard': vgls.get('lldashboard', ''),
+        'manifest': vgls.get('manifest', ''),
+        'report': vgls.get('report', ''),
+        'kconfig': kconfig_path,
+        'uconfig': uconfig_path,
+    }
+    vigiles_request(vgls_chk)
 
 
 def __main__():

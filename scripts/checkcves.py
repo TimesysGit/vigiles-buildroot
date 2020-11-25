@@ -222,20 +222,40 @@ def print_whitelist(wl, outfile=None):
         print('\t(Nothing is Whitelisted)', file=outfile)
 
 
-def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
-    resource = '/api/cves/reports/buildroot/'
+def _get_credentials(vgls_chk):
     home_dir = os.path.expanduser('~')
-    key_file = os.path.abspath(
-        os.getenv(
-            'VIGILES_KEY_FILE',
-            '%s/timesys/linuxlink_key' % home_dir
-        )
-    )
-    dashboard_config = os.getenv(
-        'VIGILES_DASHBOARD_CONFIG',
-        '%s/timesys/dashboard_config' % home_dir
-    )
-    demo = False
+    timesys_dir  = os.path.join(home_dir, 'timesys')
+
+    kf_env = os.getenv('VIGILES_KEY_FILE', '')
+    kf_param = vgls_chk.get('keyfile', '')
+    kf_default = os.path.join(timesys_dir, 'linuxlink_key')
+
+    dc_env = os.getenv('VIGILES_DASHBOARD_CONFIG', '')
+    dc_param = vgls_chk.get('dashboard', '')
+    dc_default = os.path.join(timesys_dir, 'dashboard_config')
+
+    if kf_env:
+        print("Vigiles: Using LinuxLink Key from Environment: %s" % kf_env)
+        key_file = kf_env
+    elif kf_param:
+        print("Vigiles: Using LinuxLink Key from Configuration: %s" % kf_param)
+        key_file = kf_param
+    else:
+        print("Vigiles: Trying LinuxLink Key Default: %s" % kf_default)
+        key_file = kf_default
+
+    if dc_env:
+        print("Vigiles: Using Dashboard Config from Environment: %s" % dc_env)
+        dashboard_config = dc_env
+    elif dc_param:
+        print("Vigiles: Using Dashboard Config Configuration: %s" % dc_param)
+        dashboard_config = dc_param
+    else:
+        print("Vigiles: Trying Dashboard Config Default: %s" % dc_default)
+        dashboard_config = dc_default
+
+    vgls_chk['keyfile'] = key_file
+    vgls_chk['dashboard'] = dashboard_config
 
     try:
         email, key = llapi.read_keyfile(key_file)
@@ -246,11 +266,34 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
         print(get_usage())
         sys.exit(1)
 
+    vgls_creds = {
+        'email': email,
+        'key': key,
+        'product': dashboard_tokens.get('product', ''),
+        'folder': dashboard_tokens.get('folder', ''),
+    }
+    # print("Vigiles: Using Credentials: %s" % json.dumps(vgls_creds, indent=4))
+    return vgls_creds
+
+
+def vigiles_request(vgls_chk):
+    resource = '/api/cves/reports/buildroot/'
+
+    vgls_creds = _get_credentials(vgls_chk)
+    email = vgls_creds['email']
+    key = vgls_creds['key']
+    demo = False
+
     # If there was no proper API keyfile, operate in demo mode.
     if not email or not key:
         demo = True
         resource += 'demo/'
         print_demo_notice(bad_key=True)
+
+    manifest_path = vgls_chk.get('manifest', '')
+    report_path = vgls_chk.get('report', '')
+    kconfig_path = vgls_chk.get('kconfig', '')
+    uconfig_path = vgls_chk.get('uconfig', '')
 
     if report_path:
         outfile = open(report_path, 'w')
@@ -296,8 +339,8 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
     request = {
         'manifest': manifest_data,
         'subscribe': False,
-        'product_token': dashboard_tokens.get('product', ''),
-        'folder_token': dashboard_tokens.get('folder', ''),
+        'product_token': vgls_creds.get('product', ''),
+        'folder_token': vgls_creds.get('folder', '')
         }
 
     if kernel_config:
@@ -355,9 +398,10 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
 if __name__ == '__main__':
     args = handle_cmdline_args()
 
-    vigiles_request(
-        args.manifest,
-        args.kconfig,
-        args.uboot_config,
-        args.outfile
-    )
+    vgls_chk = {
+        'manifest': args.manifest,
+        'report': args.outfile,
+        'kconfig': args.kconfig,
+        'uconfig': uconfig_pathargs.uboot_config,
+    }
+    vigiles_request(vgls_chk)
