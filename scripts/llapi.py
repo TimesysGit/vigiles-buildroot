@@ -13,6 +13,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import ssl
 import sys
 import urllib.request
@@ -20,7 +21,12 @@ import urllib.parse
 import urllib.error
 from collections import OrderedDict
 
-LINUXLINK_SERVER = 'https://linuxlink.timesys.com'
+LinuxLinkURL = os.getenv('LINUXLINK_SERVER', 'https://linuxlink.timesys.com')
+
+LinuxLinkSupportRoute = '/support'
+LinuxLinkSupportURL = LinuxLinkURL + LinuxLinkSupportRoute
+VigilesInfoURL = 'https://www.timesys.com/security/vulnerability-patch-notification/'
+
 
 def make_msg(method, resource, data):
     s = '&'.join(['%s=%s' % (k, v) for k, v in sorted(data.items())])
@@ -165,7 +171,7 @@ def api_get(email, key, resource, data_dict={}, json=True):
         'headers': {
             'X-Auth-Signature': create_hmac(key, msg),
         },
-        'url': LINUXLINK_SERVER + resource + '?%s' % params,
+        'url': LinuxLinkURL + resource + '?%s' % params,
     }
     return _do_api_call(request, json)
 
@@ -177,7 +183,7 @@ def api_post(email, key, resource, data_dict={}, json=True):
         'headers': {
             'X-Auth-Signature': create_hmac(key, msg),
         },
-        'url': LINUXLINK_SERVER + resource,
+        'url': LinuxLinkURL + resource,
         'data': urllib.parse.urlencode(data_dict).encode('utf-8'),
     }
     return _do_api_call(request, json)

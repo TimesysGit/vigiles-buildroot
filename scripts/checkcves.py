@@ -19,7 +19,7 @@ import json
 import llapi
 
 NVD_BASE_URL = 'https://nvd.nist.gov/vuln/detail/'
-API_DOC = llapi.LINUXLINK_SERVER + '/docs/wiki/engineering/LinuxLink_Key_File'
+API_DOC = llapi.LinuxLinkURL + '/docs/wiki/engineering/LinuxLink_Key_File'
 INFO_PAGE_DOMAIN = 'https://www.timesys.com'
 INFO_PAGE_PATH = '/security/vulnerability-patch-notification/'
 INFO_PAGE = INFO_PAGE_DOMAIN + INFO_PAGE_PATH
@@ -146,7 +146,7 @@ def print_summary(result, outfile=None):
     def show_header(f_out=outfile):
         print('\n-- Vigiles CVE Report --', file=f_out)
 
-        report_url = '%s%s' % (llapi.LINUXLINK_SERVER, result['report_path'])
+        report_url = '%s%s' % (llapi.LinuxLinkURL, result['report_path'])
 
         print('\n\tView detailed online report at:\n'
               '\t  %s' % report_url, file=f_out)
@@ -277,7 +277,7 @@ def _get_credentials(vgls_chk):
 
 
 def vigiles_request(vgls_chk):
-    resource = '/api/cves/reports/buildroot/'
+    resource = '/api/vigiles/manifests'
 
     vgls_creds = _get_credentials(vgls_chk)
     email = vgls_creds['email']
@@ -287,7 +287,7 @@ def vigiles_request(vgls_chk):
     # If there was no proper API keyfile, operate in demo mode.
     if not email or not key:
         demo = True
-        resource += 'demo/'
+        resource += '/demo'
         print_demo_notice(bad_key=True)
 
     manifest_path = vgls_chk.get('manifest', '')
@@ -344,7 +344,7 @@ def vigiles_request(vgls_chk):
         }
 
     if kernel_config:
-        request['kconfig'] = kernel_config
+        request['kernel_config'] = kernel_config
 
     if uboot_config:
         request['uboot_config'] = uboot_config
