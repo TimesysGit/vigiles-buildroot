@@ -67,6 +67,12 @@ def _init_manifest(vgls):
         warn("\tError: %s" % e)
         _commit = 'Release'
 
+    _hostname = vgls['config'].get('target-generic-hostname', 'buildroot')
+    _machine = _get_machine_name(vgls)
+    _name = vgls.get('manifest_name')
+    if not _name:
+        _name = '-'.join([_hostname, _machine])
+
     build_dict = {
         'arch': vgls['config']['arch'],
         'cpu': vgls['config'].get('gcc-target-cpu', vgls['config']['arch']),
@@ -74,19 +80,18 @@ def _init_manifest(vgls):
         'date': time.strftime('%Y-%m-%d', time.gmtime()),
         'distro': VIGILES_DEFAULT_DISTRO,
         'distro_version': vgls['make']['br2']['meta']['version'],
-        'hostname': vgls['config'].get('target-generic-hostname', 'buildroot'),
+        'hostname': _hostname,
         'image': VIGILES_DEFAULT_IMAGE,
-        'machine': _get_machine_name(vgls),
+        'machine': _machine,
         'manifest_version': VIGILES_MANIFEST_VERSION,
+        'manifest_name': _name,
         'packages': _stripped_packages(vgls['packages'])
     }
     return build_dict
 
 
 def _make_file_name(vgls, manifest_dict, suffix, ext):
-    _machine = manifest_dict['machine']
-    _hostname = manifest_dict['hostname']
-    file_spec = '-'.join([_hostname, _machine, suffix])
+    file_spec = '-'.join([manifest_dict['manifest_name'], suffix])
     file_name = '.'.join([file_spec, ext])
     file_path = os.path.join(vgls['vdir'], file_name)
     return file_path

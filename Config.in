@@ -126,6 +126,17 @@ config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
 
 comment "Customizing / Amending Vigiles Report"
 
+config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
+    string "Custom Manifest and Report Name"
+    help
+      By default, the file names of the Vigiles Manifest to be uploaded and
+      the CVE Report that is generated are given names based on the values of
+      BR2_HOSTNAME and BR2_DEFCONFIG (or the target CPU).
+
+      This option may be set to a custom value (e.g. an auto-generated build
+      string) for tracking/reporting purposes.
+
+
 config BR2_EXTERNAL_VIGILES_INCLUDE_CSV
     string "Additional Packages to Include in Report"
     help

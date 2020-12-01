@@ -65,6 +65,11 @@ endif
 
 
 # Manifest/Report Amendments
+vigiles-manifest-name 		:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_MANIFEST_NAME))
+ifneq ($(vigiles-manifest-name),)
+vigiles-opts		+= -N $(vigiles-manifest-name)
+endif
+
 vigiles-addl-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_INCLUDE_CSV))
 ifneq ($(vigiles-addl-file),)
 vigiles-opts	+= -A $(vigiles-addl-file)

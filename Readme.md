@@ -155,11 +155,38 @@ alternative path.
 
 In some cases, it's desirable to modify the CVE report that Vigiles generates.
 vigiles-buildroot supports the ability to _Include Additional Packages_,
-_Exclude Packages_ and _Whitelist Known CVEs_.
+_Exclude Packages_ and _Whitelist Known CVEs_. In addition, the file names of
+the locally-generated Manifest and CVE Report may be customized.
 
 All of these options are supported by a ```Kconfig``` option where a user may
 specify a CSV (comma-separated-value) file that describe the packages or CVEs.
 Each is described below.
+
+
+#### Manifest and Report Naming
+
+By default, the file names of the Vigiles Manifest to be uploaded and the CVE
+Report that is generated are given names based on the values of
+```BR2_HOSTNAME``` and ```BR2_DEFCONFIG``` (or the target CPU), which will
+produce files like this:
+
+```sh
+output/vigiles
+├── buildroot-nitrogen6x-manifest.json
+└── buildroot-nitrogen6x-report.txt
+```
+
+
+To use a custom name for the local Vigiles Manifest that is uploaded and the
+CVE Report that is generated, the Kconfig option
+```BR2_EXTERNAL_VIGILES_MANIFEST_NAME```
+can be used. If set to '**Custom-Name**', the files produced will be:
+
+```sh
+output/vigiles
+├── Custom-Name-manifest.json
+└── Custom-Name-report.txt
+```
 
 
 #### Including Additional Packages

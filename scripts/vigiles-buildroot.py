@@ -66,6 +66,8 @@ def parse_args():
     parser.add_argument('-u', '--uboot-config', dest='uconfig',
                         help='Custom U-Boot Config(s) to Use')
 
+    parser.add_argument('-N', '--name', dest='manifest_name',
+                        help='Custom Manifest/Report Name', default='')
     parser.add_argument('-A', '--additional-packages', dest='addl',
                         help='File of Additional Packages to Include')
     parser.add_argument('-E', '--exclude-packages', dest='excld',
@@ -104,6 +106,7 @@ def parse_args():
         'uconfig': args.uconfig.strip() \
             if args.uconfig \
             else 'auto',
+        'manifest_name': args.manifest_name.strip(),
         'addl': args.addl.strip() if args.addl else '',
         'excld': args.excld.strip() if args.excld else '',
         'whtlst': args.whtlst.strip() if args.whtlst else '',
