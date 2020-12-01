@@ -310,6 +310,8 @@ def vigiles_request(manifest_path, kconfig_path, uconfig_path, report_path):
           file=sys.stderr)
 
     result = llapi.api_post(email, key, resource, request)
+    if not result:
+        sys.exit(1)
 
     # the default list contains a harmless but bogus example CVE ID,
     # don't print it here in case that is confusing.
