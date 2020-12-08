@@ -80,6 +80,10 @@ def parse_args():
     parser.add_argument('-C', '--dashboard-config', dest='lldashboard',
                         help='Location of LinuxLink Dashboard Config file')
 
+    parser.add_argument('-U', '--upload-only', dest='upload_only',
+                        help='Upload the manifest only; do not wait for report.',
+                        action='store_true', default=False)
+
     parser.add_argument('-D', '--enable-debug', dest='debug',
                         help='Enable Debug Output',
                         action='store_true')
@@ -111,7 +115,8 @@ def parse_args():
         'excld': args.excld.strip() if args.excld else '',
         'whtlst': args.whtlst.strip() if args.whtlst else '',
         'llkey': args.llkey.strip() if args.llkey else '',
-        'lldashboard': args.lldashboard.strip() if args.lldashboard else ''
+        'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
+        'upload_only': args.upload_only
     }
 
     if not vgls.get('odir', None):
@@ -168,6 +173,7 @@ def run_check(vgls):
         'report': vgls.get('report', ''),
         'kconfig': kconfig_path,
         'uconfig': uconfig_path,
+        'upload_only': vgls.get('upload_only', False)
     }
     vigiles_request(vgls_chk)
 

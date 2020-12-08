@@ -85,6 +85,10 @@ ifneq ($(vigiles-whtlst-file),)
 vigiles-opts	+= -W $(vigiles-whtlst-file)
 endif
 
+ifeq ($(BR2_EXTERNAL_VIGILES_UPLOAD_ONLY),y)
+vigiles-opts	+= -U
+endif
+
 
 ifeq ($(VIGILES_ENABLE_EXPERT),y)
 ifeq ($(VIGILES_METADATA_ONLY),y)

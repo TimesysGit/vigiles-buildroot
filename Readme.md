@@ -263,6 +263,20 @@ $ cat $HOME/projects/buildroot/vigiles-cve-whitelist.csv
 
 ```
 
+### Uploading the Manifest (Only)
+
+In some cases, it may be desired to upload the Vigiles Manifest for a build
+without generating a CVE Report. This can speed up build times and ease
+reporting of automated bulk builds.
+
+This behavior can be enabled with the Kconfig option
+```BR2_EXTERNAL_VIGILES_UPLOAD_ONLY```.
+
+Instead of a text report and a link to the online report, a link to the
+Vigiles Dashboard Product Workspace (as specified with
+VIGILES_DASHBOARD_CONFIG) will be displayed, from where it can be then be
+scanned by the Vigiles Service.
+
 
 
 ### LinuxLink Credentials

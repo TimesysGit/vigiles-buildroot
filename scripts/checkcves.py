@@ -91,7 +91,7 @@ def read_manifest(manifest_file):
     return manifest_data
 
 
-def print_cves(result, demo=False, outfile=None):
+def print_cves(result, outfile=None):
     arch_cves = result.get('arch_cves', [])
     if arch_cves:
         print('\n\n-- Architecture CVEs --', file=outfile)
@@ -140,20 +140,38 @@ def parse_cvss_counts(counts, severity):
     return c.get('unfixed', 0) + c.get('fixed', 0)
 
 
-def print_summary(result, outfile=None):
-    demo = result.get('demo', False)
+def print_report_header(result, f_out=None):
+    from datetime import datetime
+    report_time = result.get('date', datetime.utcnow().isoformat())
 
-    def show_header(f_out=outfile):
+    print('-- Vigiles CVE Scanner --\n\n'
+          '\t%s\n\n' % INFO_PAGE, file=f_out)
+    print('-- Date Generated (UTC) --\n', file=f_out)
+    print('\t%s' % report_time, file=f_out)
+
+
+def print_report_overview(result, is_demo=False, f_out=None):
+    report_path = result.get('report_path', '')
+    product_path = result.get('product_path', '')
+
+    if report_path:
+        report_url = '%s%s' % (llapi.LinuxLinkURL, report_path)
         print('\n-- Vigiles CVE Report --', file=f_out)
-
-        report_url = '%s%s' % (llapi.LinuxLinkURL, result['report_path'])
-
         print('\n\tView detailed online report at:\n'
               '\t  %s' % report_url, file=f_out)
+    elif product_path:
+        product_url = '%s%s' % (llapi.LinuxLinkURL, product_path)
+        product_name = result.get('product_name', 'Default')
+        print('\n-- Vigiles Dashboard --', file=f_out)
+        print('\n\tThe manifest has been uploaded to the \'%s\' Product Workspace:\n\n'
+              '\t  %s\n' % (product_name, product_url), file=f_out)
 
-        if (demo):
-            print('\t  NOTE: Running in Demo Mode will cause this URL to '
-                  'expire after one day.', file=f_out)
+    if (is_demo):
+        print('\t  NOTE: Running in Demo Mode will cause this URL to expire '
+              'after one day.', file=f_out)
+
+
+def print_summary(result, outfile=None):
 
     def show_subscribed_summary(f_out=outfile):
         counts = result.get('counts', {})
@@ -185,18 +203,21 @@ def print_summary(result, outfile=None):
         cves = result.get('cves', {})
         print('\n-- Vigiles CVE Overview --', file=f_out)
         print('\n\tUnfixed: %d\n'
-              '\tFixed: %d\n'
-              '\tCPU: %d'
-              % (cves.get('unfixed_count', 0),
-                 cves.get('fixed_count', 0),
-                 cves.get('arch_count', 0)),
-              file=f_out)
+                '\tUnfixed, Patch Available: %d\n'
+                '\tFixed: %d\n'
+                '\tCPU: %d'
+                % (cves['unfixed_count'],
+                   cves['unapplied_count'],
+                   cves['fixed_count'],
+                   cves['arch_count'],),
+                file=f_out
+            )
 
-    show_header(outfile)
+    is_demo = result.get('demo', False)
 
-    if not demo:
+    if 'counts' in result:
         show_subscribed_summary(outfile)
-    else:
+    elif is_demo:
         show_demo_summary(outfile)
 
 
@@ -294,6 +315,7 @@ def vigiles_request(vgls_chk):
     report_path = vgls_chk.get('report', '')
     kconfig_path = vgls_chk.get('kconfig', '')
     uconfig_path = vgls_chk.get('uconfig', '')
+    upload_only = vgls_chk.get('upload_only', False)
 
     if report_path:
         outfile = open(report_path, 'w')
@@ -320,8 +342,8 @@ def vigiles_request(vgls_chk):
         except (OSError, IOError, UnicodeDecodeError) as e:
             print('Error: Could not open kernel config: %s' % e)
             sys.exit(1)
-        print('Vigiles: Kernel Config based filtering has been applied',
-              file=sys.stderr)
+        print('Vigiles: Kernel Config based filtering has been applied from %s'
+              % kconfig_path, file=sys.stderr)
 
     # U-Boot and SPL filtering works the same way as kernel config filtering
     if not uconfig_path:
@@ -333,14 +355,15 @@ def vigiles_request(vgls_chk):
         except (OSError, IOError, UnicodeDecodeError) as e:
             print('Error: Could not open U-Boot config: %s' % e)
             sys.exit(1)
-        print('Vigiles: U-Boot Config based filtering has been applied',
-              file=sys.stderr)
+        print('Vigiles: U-Boot Config based filtering has been applied %s'
+              % uconfig_path, file=sys.stderr)
 
     request = {
         'manifest': manifest_data,
         'subscribe': False,
         'product_token': vgls_creds.get('product', ''),
-        'folder_token': vgls_creds.get('folder', '')
+        'folder_token': vgls_creds.get('folder', ''),
+        'upload_only': upload_only
         }
 
     if kernel_config:
@@ -363,36 +386,23 @@ def vigiles_request(vgls_chk):
         if not any(bogon == item for bogon in bogus_whitelist.split())
     ]
 
-    print('-- Vigiles CVE Scanner --\n\n'
-          '\t%s\n\n' % INFO_PAGE, file=outfile)
-    print('-- Date Generated (UTC) --\n', file=outfile)
-    print('\t%s' % result['date'], file=outfile)
-
-    # If no LinuxLink subscription or bogus user/key, it will have fallen back
-    # to demo mode
-    demo_result = result.get('demo', False)
-    if not demo and demo_result:
-        print_demo_notice()
-        demo = demo_result
-
-    cves = result.get('cves', [])
-    arch_cves = result.get('arch_cves', [])
-
-    if not cves and not arch_cves:
-        print('Vigiles: No results.. Exiting.')
-        sys.exit(0)
+    print_report_header(result, outfile)
+    print_report_overview(result, demo, outfile)
 
     print_summary(result, outfile=outfile)
 
     if not demo:
-        print_cves(result, demo=demo, outfile=outfile)
-    print_whitelist(whitelist, outfile=outfile)
-    print_foootnotes(f_out=outfile)
+      print_cves(result, outfile=outfile)
+
+    if not upload_only:
+      print_whitelist(whitelist, outfile=outfile)
+      print_foootnotes(f_out=outfile)
 
     if outfile is not None:
-        print_summary(result)
-        print('\n\tLocal summary written to:\n\t  %s' %
-              os.path.relpath(outfile.name))
+      print_report_overview(result, demo)
+      print_summary(result)
+      print('\n\tLocal summary written to:\n\t  %s' %
+            os.path.relpath(outfile.name))
 
 
 if __name__ == '__main__':
