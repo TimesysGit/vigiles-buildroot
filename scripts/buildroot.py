@@ -142,7 +142,7 @@ def _get_make_output(odir, var_string):
             "Error: %s" % e,
         ])
         return None
-    return variables.decode().splitlines()
+    return [var for var in variables.decode().splitlines() if '=' in var]
 
 
 def _transform_make_info(vgls, variable_list):
