@@ -288,11 +288,6 @@ config VIGILES_DEBUG_OUTPUT
       This option enables "Debug Output" on the command-line when running the
       vigiles-buildroot.py script.
 
-config VIGILES_METADATA_ONLY
-    bool "Generate Manifest but don't Submit for Checking"
-    depends on VIGILES_ENABLE_EXPERT
-    default n
-
 config VIGILES_GENERATE_INTERMEDIATE_FILES
     bool "Write Intermediate JSON Files of Collected Metadata"
     depends on VIGILES_ENABLE_EXPERT

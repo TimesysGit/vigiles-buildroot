@@ -91,9 +91,6 @@ endif
 
 
 ifeq ($(VIGILES_ENABLE_EXPERT),y)
-ifeq ($(VIGILES_METADATA_ONLY),y)
-vigiles-opts	+= --metadata-only
-endif 	# ($(VIGILES_METADATA_ONLY),Y)
 ifeq ($(VIGILES_GENERATE_INTERMEDIATE_FILES),y)
 vigiles-opts	+= --write-intermediate
 endif 	# ($(VIGILES_GENERATE_INTERMEDIATE_FILES),Y)
