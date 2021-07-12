@@ -67,22 +67,22 @@ endif
 # Manifest/Report Amendments
 vigiles-manifest-name 		:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_MANIFEST_NAME))
 ifneq ($(vigiles-manifest-name),)
-vigiles-opts		+= -N $(vigiles-manifest-name)
+vigiles-opts		+= -N "$(vigiles-manifest-name)"
 endif
 
 vigiles-addl-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_INCLUDE_CSV))
 ifneq ($(vigiles-addl-file),)
-vigiles-opts	+= -A $(vigiles-addl-file)
+vigiles-opts	+= -A "$(vigiles-addl-file)"
 endif
 
 vigiles-excld-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_EXCLUDE_CSV))
 ifneq ($(vigiles-excld-file),)
-vigiles-opts	+= -E $(vigiles-excld-file)
+vigiles-opts	+= -E "$(vigiles-excld-file)"
 endif
 
 vigiles-whtlst-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_WHITELIST_CSV))
 ifneq ($(vigiles-whtlst-file),)
-vigiles-opts	+= -W $(vigiles-whtlst-file)
+vigiles-opts	+= -W "$(vigiles-whtlst-file)"
 endif
 
 ifeq ($(BR2_EXTERNAL_VIGILES_UPLOAD_ONLY),y)
