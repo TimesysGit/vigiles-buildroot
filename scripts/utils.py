@@ -87,7 +87,7 @@ def warn(msg, extra=[]):
 
 def err(msg, extra=[]):
     s_list = [msg] + extra
-    _print_list('ERROR', s_list, fps=sys.stderr)
+    _print_list('ERROR', s_list, fp=sys.stderr)
 
 
 def mkdirhier(directory):
