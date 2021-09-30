@@ -332,6 +332,18 @@ the config variable above.
 
 
 
+### Dynamic subfolder creation
+```
+               --- Enable Timesys Vigiles CVE Check
+               *** Vigiles Kernel CVE Reporting Options ***
+               *** Customizing / Amending Vigiles Report ***
+         ()    Custom Manifest and Report Name
+         ()    Subfolder name
+```
+
+If a Dashboard Config is used, a subfolder name can be specified for dynamic folder creation. Manifests will be uploaded to a subfolder with this name within the location specified in the Dashbord Config. If one does not exist, it will be created. This option will be overridden by the environment variable ```VIGILES_SUBFOLDER_NAME```
+
+
 
 ### Advanced Options
 

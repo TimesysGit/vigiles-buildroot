@@ -78,6 +78,9 @@ def handle_cmdline_args():
     input_group.add_argument('-m', '--manifest',
                              help='JSON image manifest file to check',
                              metavar='FILE')
+    parser.add_argument('-F', '--subfolder-name',
+                             help='Name of subfolder to upload to',
+                             dest='subfolder_name')
     return parser.parse_args()
 
 
@@ -255,6 +258,10 @@ def _get_credentials(vgls_chk):
     dc_param = vgls_chk.get('dashboard', '')
     dc_default = os.path.join(timesys_dir, 'dashboard_config')
 
+    sf_env = os.getenv('VIGILES_SUBFOLDER_NAME', '')
+    sf_param = vgls_chk.get('subfolder_name', '')
+    sf_default = ''
+
     if kf_env:
         print("Vigiles: Using LinuxLink Key from Environment: %s" % kf_env)
         key_file = kf_env
@@ -275,6 +282,17 @@ def _get_credentials(vgls_chk):
         print("Vigiles: Trying Dashboard Config Default: %s" % dc_default)
         dashboard_config = dc_default
 
+    if sf_env:
+        print("Vigiles: Using subfolder name from Environment: %s" % sf_env)
+        subfolder_name = sf_env
+    elif sf_param:
+        print("Vigiles: Using subfolder name Configuration: %s" % sf_param)
+        subfolder_name = sf_param
+    else:
+        print("Vigiles: Trying subfolder name Default: %s" % sf_default)
+        subfolder_name = sf_default
+
+
     vgls_chk['keyfile'] = key_file
     vgls_chk['dashboard'] = dashboard_config
 
@@ -292,6 +310,7 @@ def _get_credentials(vgls_chk):
         'key': key,
         'product': dashboard_tokens.get('product', ''),
         'folder': dashboard_tokens.get('folder', ''),
+        'subfolder_name': subfolder_name,
     }
     # print("Vigiles: Using Credentials: %s" % json.dumps(vgls_creds, indent=4))
     return vgls_creds
@@ -303,6 +322,7 @@ def vigiles_request(vgls_chk):
     vgls_creds = _get_credentials(vgls_chk)
     email = vgls_creds['email']
     key = vgls_creds['key']
+    subfolder_name = vgls_creds['subfolder_name']
     demo = False
 
     # If there was no proper API keyfile, operate in demo mode.
@@ -363,6 +383,7 @@ def vigiles_request(vgls_chk):
         'subscribe': False,
         'product_token': vgls_creds.get('product', ''),
         'folder_token': vgls_creds.get('folder', ''),
+        'subfolder_name': subfolder_name,
         'upload_only': upload_only
         }
 
@@ -413,5 +434,6 @@ if __name__ == '__main__':
         'report': args.outfile,
         'kconfig': args.kconfig,
         'uconfig': uconfig_pathargs.uboot_config,
+        'subfolder_name': args.subfolder_name,
     }
     vigiles_request(vgls_chk)

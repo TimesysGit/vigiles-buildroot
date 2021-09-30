@@ -70,6 +70,11 @@ ifneq ($(vigiles-manifest-name),)
 vigiles-opts		+= -N "$(vigiles-manifest-name)"
 endif
 
+vigiles-subfolder-name 		:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME))
+ifneq ($(vigiles-subfolder-name),)
+vigiles-opts		+= -F "$(vigiles-subfolder-name)"
+endif
+
 vigiles-addl-file	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_INCLUDE_CSV))
 ifneq ($(vigiles-addl-file),)
 vigiles-opts	+= -A "$(vigiles-addl-file)"

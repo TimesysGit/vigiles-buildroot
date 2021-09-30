@@ -68,6 +68,8 @@ def parse_args():
 
     parser.add_argument('-N', '--name', dest='manifest_name',
                         help='Custom Manifest/Report Name', default='')
+    parser.add_argument('-F', '--subfolder', dest='subfolder_name',
+                        help='Name of subfolder to upload to', default='')
     parser.add_argument('-A', '--additional-packages', dest='addl',
                         help='File of Additional Packages to Include')
     parser.add_argument('-E', '--exclude-packages', dest='excld',
@@ -111,6 +113,7 @@ def parse_args():
             if args.uconfig \
             else 'auto',
         'manifest_name': args.manifest_name.strip(),
+        'subfolder_name': args.subfolder_name.strip(),
         'addl': args.addl.strip() if args.addl else '',
         'excld': args.excld.strip() if args.excld else '',
         'whtlst': args.whtlst.strip() if args.whtlst else '',
@@ -173,7 +176,8 @@ def run_check(vgls):
         'report': vgls.get('report', ''),
         'kconfig': kconfig_path,
         'uconfig': uconfig_path,
-        'upload_only': vgls.get('upload_only', False)
+        'upload_only': vgls.get('upload_only', False),
+        'subfolder_name': vgls.get('subfolder_name', ''),
     }
     vigiles_request(vgls_chk)
 

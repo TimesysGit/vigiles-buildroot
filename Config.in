@@ -137,6 +137,15 @@ config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
       string) for tracking/reporting purposes.
 
 
+config BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME
+    string "Subfolder name"
+    help
+      By default, your manifest will be uploaded to the location specified in
+      the Dashboard Config. If a subfolder name is specified, Vigiles will
+      first check if a subfolder with that name exists in that location
+      and upload there. Otherwise, a subfolder will be created to upload to.
+
+
 config BR2_EXTERNAL_VIGILES_INCLUDE_CSV
     string "Additional Packages to Include in Report"
     help
