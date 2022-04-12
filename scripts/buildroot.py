@@ -91,6 +91,9 @@ br2_user_pkg_vars = [
     'license',
     'version',
     'pkg-cpe-id',
+    'site-method',
+    'site',
+    'source',
 ]
 
 br2_cpe_id_components = [
@@ -232,6 +235,20 @@ def _transform_make_info(vgls, variable_list):
                     continue
                 if pkgkey not in ['license', 'ignore-cves']:
                     value = value.split(' ')[0]
+
+                if key.endswith('-site'):
+                    pkg_dict[pkgname]['download_location'] = value
+                    break
+                elif key.endswith('source'):
+                    if pkg_dict[pkgname]['site-method'] != 'git':
+                        pkg_dict[pkgname]['download_location'] = os.path.join(pkg_dict[pkgname]['download_location'], value)
+
+                    del pkg_dict[pkgname]['site-method']
+                    break
+
+                if not pkg_dict[pkgname]['download_location']:
+                    pkg_dict[pkgname]['download_location'] = 'UNKNOWN'
+
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
