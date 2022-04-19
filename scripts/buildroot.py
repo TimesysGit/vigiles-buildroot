@@ -94,6 +94,7 @@ br2_user_pkg_vars = [
     'site-method',
     'site',
     'source',
+    'spdx-org',
 ]
 
 br2_cpe_id_components = [
@@ -233,7 +234,7 @@ def _transform_make_info(vgls, variable_list):
                 pkgname = key[:-len(pkgvar)]
                 if pkgname not in pkg_dict:
                     continue
-                if pkgkey not in ['license', 'ignore-cves']:
+                if pkgkey not in ['license', 'ignore-cves', 'spdx-org']:
                     value = value.split(' ')[0]
 
                 if key.endswith('-site'):
@@ -325,6 +326,11 @@ def _fixup_make_info(vgls):
             except KeyError:
                 # key doesn't exist, continue
                 continue
+
+        # Add package supplier
+        pkg_dict[name]['package-supplier'] = f"Organization: {pdict.get('spdx-org', 'Buildroot ()')}"
+        if 'spdx-org' in pdict.keys():
+            del pkg_dict[name]['spdx-org']
 
     for name, pdict in pkg_dict.items():
         pdict['cve-version'] = _sanitize_version(vgls, pdict['cve-version'])
