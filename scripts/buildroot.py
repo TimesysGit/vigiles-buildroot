@@ -90,6 +90,21 @@ br2_user_pkg_vars = [
     'ignore-cves',
     'license',
     'version',
+    'pkg-cpe-id',
+]
+
+br2_cpe_id_components = [
+    'cpe-id-prefix',
+    'cpe-id-vendor',
+    'cpe-id-product',
+    'cpe-id-version',
+    'cpe-id-update',
+    'cpe-id-edition',
+    'cpe-id-language',
+    'cpe-id-software-edition',
+    'cpe-id-target-software',
+    'cpe-id-target-hardware',
+    'cpe-id-other',
 ]
 
 def _get_make_variables(packages):
@@ -98,7 +113,7 @@ def _get_make_variables(packages):
     for p in packages:
         package_vars.extend([
             '-'.join([p, var])
-            for var in br2_internal_pkg_vars + br2_user_pkg_vars
+            for var in br2_internal_pkg_vars + br2_user_pkg_vars + br2_cpe_id_components
         ])
 
     br2_single = [
@@ -209,7 +224,7 @@ def _transform_make_info(vgls, variable_list):
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
-        for pkgkey in br2_user_pkg_vars:
+        for pkgkey in br2_user_pkg_vars + br2_cpe_id_components:
             pkgvar = '-' + pkgkey
             if key.endswith(pkgvar):
                 pkgname = key[:-len(pkgvar)]
@@ -238,6 +253,21 @@ def _sanitize_version(vgls, version_in):
     return version_out
 
 
+def _is_valid_cpe_id(cpe_id):
+    cpe22type = r'''c[pP][eE]:[aho](?::(?:[a-zA-Z0-9!\"#$%&'()*+,\\\-_.\/;<=>?@\[\]^`{|}~]|\\:)+){3}$'''
+    cpe23type = r"cpe:2\.3:[aho](?::(?:[a-zA-Z0-9!\"#$%&'()*+,\\\-_.\/;<=>?@\[\]^`{|}~]|\\:)+){10}$"
+    return True if (re.fullmatch(cpe22type, cpe_id) or re.fullmatch(cpe23type, cpe_id)) else False
+
+
+def _generate_cpe_id(pkg_info):
+    cpe_id = ""
+    for item in br2_cpe_id_components:
+        cpe_id += f"{pkg_info.get(item, '*')}:"
+
+    cpe_id = cpe_id[:-1]  # remove extra colon at the end of string
+    return cpe_id if _is_valid_cpe_id(cpe_id) else "UNKNOWN"
+
+
 def _fixup_make_info(vgls):
     make_dict = vgls['make']
     pkg_dict = vgls['packages']
@@ -264,6 +294,20 @@ def _fixup_make_info(vgls):
             pkg_dict[name]['cve-product'] = name
         if not pdict.get('cve-version', ''):
             pkg_dict[name]['cve-version'] = pdict['version']
+        if pdict.get('pkg-cpe-id', ''):
+            pkg_dict[name]['cpe-id'] = pdict['pkg-cpe-id']
+            del pkg_dict[name]['pkg-cpe-id']
+        else:
+            # Generate CPE ID using br2_cpe_id_components
+            pkg_dict[name]['cpe-id'] = _generate_cpe_id(pdict)
+
+        # Remove br2_cpe_id_components from pkg_dict once cpe id is generated
+        for item in br2_cpe_id_components:
+            try:
+                del pkg_dict[name][item]
+            except KeyError:
+                # key doesn't exist, continue
+                continue
 
     for name, pdict in pkg_dict.items():
         pdict['cve-version'] = _sanitize_version(vgls, pdict['cve-version'])
