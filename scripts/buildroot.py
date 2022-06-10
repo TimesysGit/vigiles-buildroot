@@ -143,25 +143,104 @@ def _get_make_variables(packages):
     return var_string
 
 
-def _get_make_output(odir, var_string):
+def _run_make(mk_opts=[], mk_args=[], mk_context=[]):
+    mk_cmd = ['make', '-s']
+
     try:
-        variables = subprocess.check_output(
-            [
-                "make",
-                ("O=%s" % odir),
-                "BR2_HAVE_DOT_CONFIG=y",
-                "-s",
-                "printvars",
-                ("VARS=%s" % var_string)
-            ]
-        )
-    except Exception as e:
+        mk_output = subprocess.check_output(
+            mk_context + mk_cmd + mk_opts + mk_args
+        ).decode()
+    except Exception as exc:
         err([
-            " Could not execute Buildroot Make process",
-            "Error: %s" % e,
+            'Could not execute Make',
+            f'Command:   {mk_cmd}',
+            f'Arguments: {mk_args}',
+            f'Context:   {mk_context}',
+            f'Error: {exc}'
         ])
-        return None
-    return [var for var in variables.decode().splitlines() if '=' in var]
+    return mk_output
+
+
+def _have_buggy_make():
+    MakeStackBugVersions = ['4.3']
+
+    mk_output = _run_make(mk_args=['--version'])
+    mk_ver = mk_output.splitlines()[0].split()[-1]
+    have_bug = (mk_ver in MakeStackBugVersions)
+    if have_bug:
+        info(f'Detected buggy Make version ({mk_ver}); working around..')
+    else:
+        dbg(f'Make version Ok ({mk_ver})')
+    return have_bug
+
+
+def _printvars(odir, var_string, mk_context=[]):
+    vgls_opts = [f'O={odir}', 'BR2_HAVE_DOT_CONFIG=y']
+    printvar_args = ['printvars', f'VARS={var_string}']
+    return _run_make(vgls_opts, printvar_args, mk_context)
+
+
+def _printvars_workaround(odir, var_string):
+    from pathlib import Path
+    from tempfile import NamedTemporaryFile
+    from resource import getrlimit, setrlimit, RLIMIT_STACK
+    from shutil import copy as sh_copy
+
+    # Step 1 -- Undo the Buildroot fixup.
+    #  Backup the Buildroot Makefile
+    f_make = Path(Path.cwd(), 'Makefile')
+    f_backup = f_make.with_suffix('.vgls-orig')
+
+    try:
+        sh_copy(f_make, f_backup)
+    except Exception as exc:
+        err([
+            f'make-workaround: Could not backup {f_name} to {f_backup}',
+            f'Error: {exc}'
+        ])
+        raise exc
+    dbg(f'make-workaround: Makefile backed up at {f_backup}')
+
+    # Step 2 -- Fixup the Makefile
+    #  Remove printvars dependencies
+    try:
+        f_make.write_text(
+            re.compile(r'\nprintvars:.*').sub(
+                '\nprintvars:', f_make.read_text()
+            )
+        )
+    except Exception as exc:
+        err([
+            f'make-workaround: Could not fixup {f_make}',
+            f'Error: {exc}'
+        ])
+        f_backup.replace(f_make)
+        raise exc
+
+    # Step 3 -- Set workaround context for the upstream Make bug
+    #  Increase the process stack limit when run make
+    fixup_context = ['/usr/bin/env', 'prlimit', '--stack=16777216:']
+
+    # Step 4 -- Actually run 'make printvars'
+    dbg(f'make-workaround: Calling "make printvars"..')
+    mk_output = _printvars(odir, var_string, fixup_context)
+
+    # Step 4 -- Cleanup
+    dbg(f'make-workaround: Cleaning up')
+    f_backup.replace(f_make)
+
+    return mk_output
+
+
+def _get_make_output(odir, var_string):
+    if _have_buggy_make():
+        mk_output = _printvars_workaround(odir, var_string)
+    else:
+        mk_output = _printvars(odir, var_string)
+
+    return [
+        var for var in mk_output.splitlines() if '=' in var
+    ]
 
 
 def _transform_make_info(vgls, variable_list):
@@ -361,6 +440,7 @@ def get_make_info(vgls):
     var_string = _get_make_variables(pkg_dict.keys())
     variable_list = _get_make_output(odir, var_string)
     if not variable_list:
+        info('No make variables found')
         return None
 
     vgls['make'] = _transform_make_info(vgls, variable_list)

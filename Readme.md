@@ -360,6 +360,45 @@ These features are not supported and no documentation is provided for them.
 ```
 
 
+### Other Notes
+
+#### Make 4.3 Workaround
+
+The version of ```make``` that was shipped with Ubuntu 22.04 contains a bug
+that is described here:
+
+>https://savannah.gnu.org/bugs/?59093
+
+It is discussed in this Buildroot thread:
+
+>https://git.buildroot.org/buildroot/commit/?id=5a9504831f3fa1ef3be334036c93da30150fde55
+
+Unfortunately, this prevents Vigiles-Buildroot from working as it inherently depends on
+the ```make printvars``` command.
+
+---
+
+In order to enable Vigiles functionality, we had to engage a very 'special' strategy
+if and only if Make 4.3 is detected by which (a) we inhibit the Buildroot workaround
+(by using a fixed-up top-level Makefile **ONLY FOR THAT CALL**); and (b) execute
+```make printvars``` with an increased process stack size (by wrapping it with
+```prlimit```)
+
+Should this interfere with one's build system, an alternative approach can be used, though
+it will require custom modifications to both vigiles-buildroot and Buildroot itself.
+
+- Revert the vigiles-buildroot commit
+
+- Revert the Buildroot workaround (25cec5ea733251eb)
+
+- Increase the per-process stack size with ```ulimit``` before building.
+
+Please note that this approach is not officially supported and YMMV.
+
+
+---
+
+
 Maintenance
 ===========
 
