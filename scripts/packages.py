@@ -28,6 +28,7 @@ from utils import dbg, info, warn
 def get_package_info(vgls):
     config_dict = vgls.get('config', {})
     pkg_dict = defaultdict(lambda: defaultdict(dict))
+    global_patch_dir = config_dict.get("global-patch-dir", None)
 
     def _config_packages(config_dict):
         config_pkgs = set()
@@ -177,6 +178,19 @@ def get_package_info(vgls):
                     '*.patch'
                 )
             )
+        
+        # Include patches in global patch directory
+        if global_patch_dir:
+            pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""))
+            
+            for subdir, _, _ in os.walk(pkg_patch_dir):
+                patch_list.extend(
+                    fnmatch.filter(
+                        [p.path for p in os.scandir(subdir)],
+                        '*.patch'
+                    )
+                )
+        
         if patch_list:
             pkg['patches'] = sorted([
                 os.path.basename(p) for p in patch_list
