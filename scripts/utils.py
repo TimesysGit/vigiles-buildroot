@@ -127,3 +127,15 @@ def write_intm_json(vgls, name, d):
                     "Error: %s" % e,
                  ]
             )
+
+def get_external_dirs(vgls):
+    from buildroot import _get_make_output
+    
+    odir = vgls["odir"]
+    mk_output = _get_make_output(odir, "BR2_EXTERNAL")
+    paths = []
+    for out in mk_output:
+        if out.startswith("BR2_EXTERNAL"):
+            paths = [p for p in out.replace("BR2_EXTERNAL=", "").split() if not p.endswith("vigiles-buildroot")]
+            break
+    return paths

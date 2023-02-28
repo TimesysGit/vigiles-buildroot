@@ -20,7 +20,7 @@ import re
 
 from collections import defaultdict
 
-from utils import write_intm_json
+from utils import write_intm_json, get_external_dirs
 from utils import kconfig_to_py, py_to_kconfig
 from utils import dbg, info, warn
 
@@ -83,30 +83,41 @@ def get_package_info(vgls):
                          "package/doc-asciidoc.mk",
                          "package/pkg-.*.mk",
                          "package/nvidia-tegra23/nvidia-tegra23.mk"]
-        pkg_dict = defaultdict()
-        for root, dirs, files in os.walk("."):
-            rootdir = root.split("/")
-            if len(rootdir) < 2:
-                continue
-            if rootdir[1] not in WALK_USEFUL_SUBDIRS:
-                continue
-            for f in files:
-                if not f.endswith(".mk"):
+        
+        def _get_pkg_dict(layer_dir):
+            for root, dirs, files in os.walk(layer_dir):
+                rootdir = root.replace(layer_dir, "").split("/")
+                if len(rootdir) < 2:
                     continue
-                # Strip ending ".mk"
-                pkgname = kconfig_to_py(f[:-3])
-                if package_list and pkgname not in package_list:
+                if rootdir[1] not in WALK_USEFUL_SUBDIRS:
                     continue
-                pkgpath = os.path.join(root, f)
-                skip = False
-                for exclude in WALK_EXCLUDES:
-                    # pkgpath[2:] strips the initial './'
-                    if re.match(exclude, pkgpath[2:]):
-                        skip = True
+                for f in files:
+                    if not f.endswith(".mk"):
                         continue
-                if skip:
-                    continue
-                pkg_dict[pkgname] = os.path.relpath(pkgpath)
+                    # Strip ending ".mk"
+                    pkgname = kconfig_to_py(f[:-3])
+                    if package_list and pkgname not in package_list:
+                        continue
+                    pkgpath = os.path.join(root, f)
+                    skip = False
+                    for exclude in WALK_EXCLUDES:
+                        # pkgpath[2:] strips the initial './'
+                        if re.match(exclude, pkgpath[2:]):
+                            skip = True
+                            continue
+                    if skip:
+                        continue
+                    pkg_dict[pkgname] = os.path.relpath(pkgpath)
+                    
+        pkg_dict = defaultdict()
+        
+        _get_pkg_dict(".")
+        
+        ext_dirs = get_external_dirs(vgls)
+        if ext_dirs:
+            for d in ext_dirs:
+                _get_pkg_dict(d)
+
         dbg("Found %d packages" % len(pkg_dict.keys()))
         return pkg_dict
 
