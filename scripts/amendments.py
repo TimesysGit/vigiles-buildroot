@@ -111,7 +111,7 @@ def _filter_excluded_packages(vgls_pkgs, excld_pkgs):
     pkg_matches = list(set([
         k
         for k, v in vgls_pkgs.items()
-        if v['name'] in excld_pkgs
+        if v.get('name') in excld_pkgs
     ]))
 
     info("Vigiles: Excluding Packages: %s" % sorted(pkg_matches))

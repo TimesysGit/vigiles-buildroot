@@ -418,12 +418,23 @@ def _fixup_make_info(vgls):
         if 'srcdir' in pdict:
             pdict['srcdir'] = os.path.join(vgls['bdir'], pdict['srcdir'])
 
+    excluded_virtual_pkgs = []
+    include_virtual_pkgs = vgls.get("include_virtual_pkgs")
     for virt, real in providers.items():
-        if real in pkg_dict:
-            pkg_dict[virt]['provider'] = real
-            for key in ['version', 'cve-version', 'license']:
-                virt_value = pkg_dict[virt].get(key, 'unset')
-                pkg_dict[virt][key] = pkg_dict[real].get(key, virt_value)
+        if include_virtual_pkgs:
+            if real in pkg_dict:
+                pkg_dict[virt]['provider'] = real
+                for key in ['version', 'cve-version']:
+                    virt_value = pkg_dict[virt].get(key, 'unset')
+                    pkg_dict[virt][key] = pkg_dict[real].get(key, virt_value)
+        else:
+            #exclude virtual packages from generated SBOM
+            if virt in pkg_dict:
+                del pkg_dict[virt]
+                excluded_virtual_pkgs.append(virt)
+
+    if not include_virtual_pkgs and excluded_virtual_pkgs:
+        info("Excluded virtual packages from SBOM: %s" % excluded_virtual_pkgs)       
 
     write_intm_json(vgls, 'packages-makevars-fixedup', pkg_dict)
     return make_dict

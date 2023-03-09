@@ -359,6 +359,17 @@ These features are not supported and no documentation is provided for them.
         [ ]     Write Intermediate JSON Files of Collected Metadata
 ```
 
+### Including Virtual Packages in generated SBOM
+
+This option can be found under Advanced Vigiles option
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        [ ]   Include virtual packages in SBOM
+```
+This option will include the virtual packages in generated SBOM. By default vigiles-buildroot
+will exclude the virtual packages from generated SBOM.
+
 
 ### Other Notes
 

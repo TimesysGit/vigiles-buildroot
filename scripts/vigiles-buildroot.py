@@ -95,6 +95,9 @@ def parse_args():
     parser.add_argument('-M', '--metadata-only', dest='do_check',
                         help='Only collect metadata, don\'t run online Check',
                         action='store_false')
+    parser.add_argument('-v', '--include-virtual', dest='include_virtual_pkgs',
+                        help='Include virtual packages in generated SBOM',
+                        action='store_true')
     args = parser.parse_args()
 
     set_debug(args.debug)
@@ -119,7 +122,8 @@ def parse_args():
         'whtlst': args.whtlst.strip() if args.whtlst else '',
         'llkey': args.llkey.strip() if args.llkey else '',
         'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
-        'upload_only': args.upload_only
+        'upload_only': args.upload_only,
+        'include_virtual_pkgs': args.include_virtual_pkgs
     }
 
     if not vgls.get('odir', None):

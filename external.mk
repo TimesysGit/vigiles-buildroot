@@ -101,6 +101,10 @@ vigiles-opts	+= --write-intermediate
 endif 	# ($(VIGILES_GENERATE_INTERMEDIATE_FILES),Y)
 endif 	# ($(VIGILES_ENABLE_EXPERT),y)
 
+ifeq ($(VIGILES_INCLUDE_VIRTUAL_PACKAGES),y)
+vigiles-opts    += -v
+endif
+
 
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
