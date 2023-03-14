@@ -168,7 +168,22 @@ def _build_whitelist(vgls, manifest):
     return list(whtlst)
 
 
-def amend_manifest(vgls, manifest):
+def _set_package_field_defaults(manifest):
+    for pkg, pkg_dict in manifest["packages"].items():
+        if not pkg_dict.get("version", ""):
+            pkg_dict["version"] = "unset"
+        if not pkg_dict.get("cve_version", ""):
+            pkg_dict["cve_version"] = pkg_dict["version"]
+        if not pkg_dict.get("name", ""):
+            pkg_dict["name"] = pkg
+        if not pkg_dict.get("cve_product", ""):
+            pkg_dict["cve_product"] = pkg
+        if not pkg_dict.get("license", ""):
+            pkg_dict["license"] = "unknown"
+
+    
+def amend_manifest(vgls, manifest): 
+    _set_package_field_defaults(manifest)
     addl_pkgs = _get_addl_packages(vgls['addl'])
     if addl_pkgs:
         manifest.update(addl_pkgs)
