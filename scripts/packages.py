@@ -18,11 +18,12 @@ import json
 import os
 import re
 
+from buildroot import _run_make
 from collections import defaultdict
 
 from utils import write_intm_json, get_external_dirs
 from utils import kconfig_to_py, py_to_kconfig
-from utils import dbg, info, warn
+from utils import dbg, info, warn, err
 
 
 def get_package_info(vgls):
@@ -245,3 +246,53 @@ def get_package_info(vgls):
 
     write_intm_json(vgls, 'config-packages', pkg_dict)
     return pkg_dict
+
+def get_package_dependencies(packages):
+    def _get_build_dependencies(pkg):
+        build_deps = []
+
+        try:
+            mk_opts = ["{}-show-recursive-depends".format(pkg)]
+            make_output = _run_make(mk_opts=mk_opts) or ""
+            build_deps = make_output.split()
+        except Exception as e:
+            err("Error while getting build dependencies for {}: {}".format(pkg, e))
+        return build_deps
+
+    def _get_runtime_dependencies(pkg):
+        runtime_deps = set()
+        if pkg == 'linux':
+            config_path = os.path.join(".", pkg, "Config.in")
+        else:
+            dirs = ["boot", "package"]
+            for dir in dirs:
+                config_path = os.path.join(".", dir, pkg, "Config.in")
+                if os.path.exists(config_path):
+                    break
+
+        if os.path.exists(config_path):
+            with open(config_path, "r") as config_file:
+                config = config_file.read()
+
+            match = re.findall(r'select BR2_PACKAGE_(.*) #\s*(runtime|run-time)'.format(pkg), config)
+            if match:
+                for pkg_str, _ in match:
+                    pkgname = pkg_str.split()[0] or ""
+                    pkgname = kconfig_to_py(pkgname)
+                    runtime_deps.add(pkgname)
+        else:
+            warn("Unable to find Config.in for package: %s" % pkg)
+        return list(runtime_deps)
+
+    for pkg, pkg_dict in packages.items():
+        # runtime dependencies
+        runtime_deps = _get_runtime_dependencies(pkg)
+        dbg("Runtime dependencies for %s: %s" % (pkg, runtime_deps))
+        
+        # build dependencies
+        build_deps = _get_build_dependencies(pkg)
+        dbg("Build dependencies for %s: %s" % (pkg, build_deps))
+        pkg_dict["dependencies"] = {
+            "build": build_deps,
+            "runtime": runtime_deps
+        }

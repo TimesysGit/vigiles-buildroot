@@ -161,6 +161,8 @@ def collect_metadata(vgls):
         dbg("Getting U-Boot Info ...")
         get_uboot_info(vgls)
 
+    dbg("Getting Package Dependencies ...")
+    packages.get_package_dependencies(vgls['packages'])
 
 def run_check(vgls):
     kconfig_path = ''
