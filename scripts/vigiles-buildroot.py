@@ -44,7 +44,7 @@ import os
 import sys
 import json
 
-from buildroot import get_config_options, get_make_info
+from buildroot import get_config_options, get_make_info, get_all_pkg_make_info
 from manifest import VIGILES_DIR, write_manifest
 import packages
 from checkcves import vigiles_request
@@ -138,6 +138,8 @@ def parse_args():
 
 
 def collect_metadata(vgls):
+    vgls["all_pkg_make_info"] = get_all_pkg_make_info(vgls["odir"])
+    
     dbg("Getting Config Info ...")
     vgls['config'] = get_config_options(vgls)
     if not vgls['config']:
@@ -147,6 +149,9 @@ def collect_metadata(vgls):
     vgls['packages'] = packages.get_package_info(vgls)
     if not vgls['packages']:
         sys.exit(1)
+
+    dbg("Getting Package Dependencies ...")
+    packages.get_package_dependencies(vgls, vgls['packages'])
 
     dbg("Getting Make Variables ...")
     vgls['make'] = get_make_info(vgls)
@@ -160,9 +165,6 @@ def collect_metadata(vgls):
     if 'uboot' in vgls['packages']:
         dbg("Getting U-Boot Info ...")
         get_uboot_info(vgls)
-
-    dbg("Getting Package Dependencies ...")
-    packages.get_package_dependencies(vgls['packages'])
 
     dbg("Getting Package Checksums ...")
     vgls['packages'] = packages.get_checksum_info(vgls)

@@ -410,6 +410,12 @@ Please note that this approach is not officially supported and YMMV.
 ---
 
 
+#### Package Version Information in Generated SBOM
+
+Buildroot includes packages/config scripts lacking version information (Ex. initscripts, urandom-scripts, etc.). 
+In the generated SBOM for such packages version is set to the Buildroot version or the Buildroot commit hash.
+
+
 Maintenance
 ===========
 

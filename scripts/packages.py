@@ -18,7 +18,6 @@ import json
 import os
 import re
 
-from buildroot import _run_make
 from collections import defaultdict
 
 from utils import write_intm_json, get_external_dirs
@@ -28,6 +27,7 @@ from utils import dbg, info, warn, err
 
 def get_package_info(vgls):
     config_dict = vgls.get('config', {})
+    all_pkg_make_info = vgls.get('all_pkg_make_info', {})
     pkg_dict = defaultdict(lambda: defaultdict(dict))
     global_patch_dir = config_dict.get("global-patch-dir", None)
 
@@ -96,7 +96,8 @@ def get_package_info(vgls):
                     if not f.endswith(".mk"):
                         continue
                     # Strip ending ".mk"
-                    pkgname = kconfig_to_py(f[:-3])
+                    pkgname = f[:-3]
+                    pkgname = all_pkg_make_info.get(pkgname, {}).get("name", kconfig_to_py(pkgname))
                     if package_list and pkgname not in package_list:
                         continue
                     pkgpath = os.path.join(root, f)
@@ -242,29 +243,47 @@ def get_package_info(vgls):
     for name, makefile in known_packages.items():
         pkg_dict[name]['name'] = name
         pkg_dict[name]['makefile'] = makefile
+        pkg_dict[name]['component_type'] = ["component"]
         _pkg_patches(pkg_dict[name])
 
     write_intm_json(vgls, 'config-packages', pkg_dict)
     return pkg_dict
 
-def get_package_dependencies(packages):
-    def _get_build_dependencies(pkg):
-        build_deps = []
 
-        try:
-            mk_opts = ["{}-show-recursive-depends".format(pkg)]
-            make_output = _run_make(mk_opts=mk_opts) or ""
-            build_deps = make_output.split()
-        except Exception as e:
-            err("Error while getting build dependencies for {}: {}".format(pkg, e))
-        return build_deps
+def get_package_dependencies(vgls, packages):
+    def _get_pkg_make_info(pkg):
+        kconfig_pkg = py_to_kconfig(pkg)
+        kconfig_pkg_info = all_pkg_make_info.get(kconfig_pkg, {})
+        return kconfig_pkg_info
+
+    def _fixup_deps(deps):
+        # Replaces the package names with their raw package names
+        fixed_deps = set()
+        include_virtual_pkgs = vgls.get("include_virtual_pkgs")
+        for dep in deps:
+            kconfig_dep_info = _get_pkg_make_info(dep)
+            fixed_dep_name = kconfig_dep_info.get("rawname", dep)
+            if not include_virtual_pkgs:
+                is_virtual = _get_pkg_make_info(fixed_dep_name).get("is-virtual")
+                if is_virtual:
+                    continue
+            fixed_deps.add(fixed_dep_name)
+        return sorted(list(fixed_deps))
+
+    def _get_build_dependencies(pkg):
+        package_dict = _get_pkg_make_info(pkg)
+        if package_dict:
+            dependencies = package_dict.get("dependencies", [])
+            return dependencies
+        return []
 
     def _get_runtime_dependencies(pkg):
+        pkg = _get_pkg_make_info(pkg).get("rawname", pkg)
         runtime_deps = set()
         if pkg == 'linux':
             config_path = os.path.join(".", pkg, "Config.in")
         else:
-            dirs = ["boot", "package"]
+            dirs = ["boot", "package", "toolchain"]
             for dir in dirs:
                 config_path = os.path.join(".", dir, pkg, "Config.in")
                 if os.path.exists(config_path):
@@ -278,24 +297,73 @@ def get_package_dependencies(packages):
             if match:
                 for pkg_str, _ in match:
                     pkgname = pkg_str.split()[0] or ""
-                    pkgname = kconfig_to_py(pkgname)
+                    pkgname = all_pkg_make_info.get(pkgname, {}).get("rawname", kconfig_to_py(pkgname))
                     runtime_deps.add(pkgname)
         else:
-            warn("Unable to find Config.in for package: %s" % pkg)
-        return list(runtime_deps)
+            missing_configs.add(pkg)
 
-    for pkg, pkg_dict in packages.items():
+        runtime_deps = [dep for dep in runtime_deps if _get_pkg_make_info(dep)]
+        return runtime_deps
+
+    def add_dependencies(pkg):
         # runtime dependencies
         runtime_deps = _get_runtime_dependencies(pkg)
         dbg("Runtime dependencies for %s: %s" % (pkg, runtime_deps))
+        include_deps_as_pkgs(runtime_deps, "runtime")
         
         # build dependencies
         build_deps = _get_build_dependencies(pkg)
         dbg("Build dependencies for %s: %s" % (pkg, build_deps))
-        pkg_dict["dependencies"] = {
-            "build": build_deps,
-            "runtime": runtime_deps
+        include_deps_as_pkgs(build_deps, "build")
+
+        pkg_dict[pkg]["dependencies"] = {
+            "build": _fixup_deps(build_deps),
+            "runtime": _fixup_deps(runtime_deps)
         }
+
+    def include_deps_as_pkgs(deps, component_type):
+        dependency_only_comment = {
+            "build": "Dependency Only; This component was identified as a build dependency by Vigiles",
+            "runtime": "Dependency Only; This component was identified as a runtime dependency by Vigiles",
+            "build&runtime": "Dependency Only; This component was identified as a build and runtime dependency by Vigiles",
+        }
+        for dep in deps:
+            fixed_dep = _get_pkg_make_info(dep).get("rawname")
+            if fixed_dep and fixed_dep in pkg_dict.keys():
+                _update_comments(fixed_dep, component_type, dependency_only_comment)
+            elif dep not in pkg_dict.keys():
+                pkg_dict[dep]["comment"] = dependency_only_comment[component_type]
+                pkg_dict[dep]["component_type"] = [component_type]
+                add_dependencies(dep)
+                dep_pkgs.add(dep)
+            else:
+                _update_comments(dep, component_type, dependency_only_comment)
+
+    def _update_comments(dep, component_type, comment_map):
+        component_type_list = pkg_dict[dep].get("component_type", [])
+        if component_type and component_type not in component_type_list:
+            pkg_dict[dep]["component_type"].append(component_type)
+            pkg_dict[dep]["component_type"].sort()
+        if "component" not in component_type_list:
+            if "build" in component_type_list and "runtime" in component_type_list:
+                pkg_dict[dep]["comment"] = comment_map["build&runtime"]
+            elif "build" in component_type_list:
+                pkg_dict[dep]["comment"] = comment_map["build"]
+            elif "runtime" in component_type_list:
+                pkg_dict[dep]["comment"] = comment_map["runtime"]
+
+    missing_configs = set()
+    dep_pkgs = set()
+    all_pkg_make_info = vgls["all_pkg_make_info"]
+    pkg_dict = packages.copy()
+
+    for pkg, _ in packages.items():
+        add_dependencies(pkg)
+    
+    if missing_configs:
+        warn("Config.in not found for packages: %s" % list(missing_configs))
+
+    vgls['packages'] = pkg_dict
 
 
 def _get_pkg_hash_map(vgls):

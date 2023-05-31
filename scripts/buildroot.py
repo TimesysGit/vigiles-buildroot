@@ -259,8 +259,6 @@ def _transform_make_info(vgls, variable_list):
             key = key[4:]
             if key.startswith('package-provides-'):
                 var = key[17:]
-                if var.startswith('host-'):
-                    continue
                 make_dict['providers'][var] = value
             elif key.startswith('package-'):
                 var = key[8:]
@@ -370,6 +368,7 @@ def _fixup_make_info(vgls):
     pkg_dict = vgls['packages']
     providers = make_dict.get('providers', {})
     rawname_fixups = defaultdict()
+    all_pkg_make_info = vgls.get('all_pkg_make_info', {})
 
     for name, pdict in pkg_dict.items():
         rawname = pdict.get('rawname', name)
@@ -424,17 +423,47 @@ def _fixup_make_info(vgls):
         if include_virtual_pkgs:
             if real in pkg_dict:
                 pkg_dict[virt]['provider'] = real
+                # For virtual packages set version of its provider
                 for key in ['version', 'cve-version']:
                     virt_value = pkg_dict[virt].get(key, 'unset')
                     pkg_dict[virt][key] = pkg_dict[real].get(key, virt_value)
-        else:
-            #exclude virtual packages from generated SBOM
-            if virt in pkg_dict:
-                del pkg_dict[virt]
-                excluded_virtual_pkgs.append(virt)
+
+    # some pkgs like toolchain and toolchain-buildroot, doesnt have provider details
+    # so exclude virtual packages using global make dict
+    pkgs = list(pkg_dict.keys())
+    if not include_virtual_pkgs:
+        for pkg in pkgs:
+            kconfig_virt_pkg = py_to_kconfig(pkg)
+            pkg_info = all_pkg_make_info.get(kconfig_virt_pkg, {})
+            is_virtual = pkg_info.get("is-virtual", False)
+            if is_virtual:
+                virt_pkg = pkg_info.get("rawname", pkg)
+                if virt_pkg in pkg_dict:
+                    del pkg_dict[virt_pkg]
+                    excluded_virtual_pkgs.append(virt_pkg)
 
     if not include_virtual_pkgs and excluded_virtual_pkgs:
-        info("Excluded virtual packages from SBOM: %s" % excluded_virtual_pkgs)       
+        info("Excluded virtual packages from SBOM: %s" % excluded_virtual_pkgs)
+
+    # For packages with missing versions check for version in makefile 
+    # Scripts included with buildroot mostly does not have a version in makefile, 
+    # So set the version to buildroot version/commit hash
+
+    br_version = make_dict.get("br2",{}).get("meta",{}).get("version")
+    if not br_version:
+        try:
+            br_version = subprocess.check_output([
+                    'git', 'rev-parse', 'HEAD'
+                ]).splitlines()[0].decode()
+        except Exception as e:
+            warn("Could not determine Buildroot git HEAD.")
+            warn("\tError: %s" % e)
+            br_version = 'Release'
+
+    for pkg, pdict in pkg_dict.items():
+        if not pdict.get("version") or pdict.get("version") == "unset":
+            version = br_version
+            pdict["version"] = pdict["cve_version"] = _sanitize_version(vgls, version)
 
     write_intm_json(vgls, 'packages-makevars-fixedup', pkg_dict)
     return make_dict
@@ -459,3 +488,38 @@ def get_make_info(vgls):
 
     write_intm_json(vgls, 'make-vars', make_dict)
     return make_dict
+
+
+def get_all_pkg_make_info(odir):
+    # This gets the make info for all the packages in buildroot
+    make_vars = [
+        "FINAL_RECURSIVE_DEPENDENCIES",
+        "IS_VIRTUAL",
+        "RAWNAME"
+    ]
+
+    make_dict = {}
+    var_list = ["%_" + var for var in make_vars]
+    var_string = " ".join(var_list)
+    variable_list = _get_make_output(odir, var_string)
+    if not variable_list:
+        warn('No make variables found')
+        return None
+    
+    for var in variable_list:
+        key, value = var.split("=")
+
+        for mk_key in make_vars:
+            if not key.endswith(mk_key):
+                continue
+            pkg = key[:-len("_"+mk_key)]
+            if pkg not in make_dict.keys():
+                make_dict[pkg] = {}
+
+            if mk_key == "FINAL_RECURSIVE_DEPENDENCIES":
+                make_dict[pkg]["dependencies"] = value.strip().split(" ")
+            else:
+                make_dict[pkg][kconfig_to_py(mk_key)] = kconfig_bool(value.strip())
+
+    return make_dict
+
