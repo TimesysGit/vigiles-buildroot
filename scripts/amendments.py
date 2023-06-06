@@ -180,6 +180,8 @@ def _set_package_field_defaults(manifest):
             pkg_dict["cve_product"] = pkg
         if not pkg_dict.get("license", ""):
             pkg_dict["license"] = "unknown"
+        if not pkg_dict.get("checksums", ""):
+            pkg_dict["checksums"] = []
 
     
 def amend_manifest(vgls, manifest): 

@@ -164,6 +164,10 @@ def collect_metadata(vgls):
     dbg("Getting Package Dependencies ...")
     packages.get_package_dependencies(vgls['packages'])
 
+    dbg("Getting Package Checksums ...")
+    vgls['packages'] = packages.get_checksum_info(vgls)
+
+
 def run_check(vgls):
     kconfig_path = ''
     _kconfig = vgls.get('kconfig', 'none')

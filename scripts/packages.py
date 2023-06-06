@@ -296,3 +296,57 @@ def get_package_dependencies(packages):
             "build": build_deps,
             "runtime": runtime_deps
         }
+
+
+def _get_pkg_hash_map(vgls):
+    pkg_hash_map = {}
+    dirs = ["package", "boot", "linux"]
+    for dir in dirs:
+        dir_path = os.path.join(vgls["topdir"], dir)
+        for root, dir, files in os.walk(dir_path):
+            for f in files:
+                if f.endswith(".hash"):
+                    pkg = os.path.basename(root)
+                    hash_path = os.path.join(root, f)
+                    pkg_hash_map[pkg] = hash_path
+    return pkg_hash_map
+
+
+def get_checksum_info(vgls):
+    allowed_checksums = ("SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6")
+    pkg_hash_map = _get_pkg_hash_map(vgls)
+
+    missing_hashfiles = []
+
+    for pkg, pkg_info in vgls['packages'].items():
+        checksums = []
+        hash_fp = pkg_hash_map.get(pkg, "")
+        if not os.path.exists(hash_fp):
+            missing_hashfiles.append(pkg)
+            continue
+
+        with open(hash_fp, "r") as f:
+            for line in f.readlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                data = line.split()
+                if len(data) != 3:
+                    continue
+                algo, checksum, filename = data
+                if algo.upper() not in allowed_checksums:
+                    continue
+
+                download_location = pkg_info.get("download_location", "")
+                download_filename = os.path.basename(download_location)
+                if filename == download_filename:
+                    checksums.append({
+                        "algorithm": algo.upper(),
+                        "checksum_value": checksum
+                    })
+        
+            pkg_info["checksums"] = checksums
+
+    if missing_hashfiles:
+        warn(".hash files not found for packages: %s" % missing_hashfiles)
+    return vgls['packages']
