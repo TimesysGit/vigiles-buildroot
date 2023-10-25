@@ -24,6 +24,118 @@ from utils import write_intm_json, get_external_dirs
 from utils import kconfig_to_py, py_to_kconfig
 from utils import dbg, info, warn, err
 
+def get_patches(vgls):
+    def _patched_cves(src_patches):
+        patched_dict = dict()
+
+        cve_match = re.compile("CVE\-\d{4}\-\d+")
+
+        # Matches last CVE-1234-211432 in the file name, also if written
+        # with small letters. Not supporting multiple CVE id's in a single
+        # file name.
+        cve_file_name_match = re.compile(".*([Cc][Vv][Ee]\-\d{4}\-\d+)")
+
+        for patch_path in src_patches:
+            found_cves = list()
+
+            patch_name = os.path.basename(patch_path)
+            # Check patch file name for CVE ID
+            fname_match = cve_file_name_match.search(patch_name)
+            if fname_match:
+                cve = fname_match.group(1).upper()
+                found_cves.append(cve)
+
+            with open(patch_path, "r", encoding="utf-8") as f:
+                try:
+                    patch_text = f.read()
+                except UnicodeDecodeError:
+                    info(vgls, "Failed to read patch %s using UTF-8 encoding"
+                          " trying with iso8859-1" % patch_path)
+                    f.close()
+                    with open(patch_path, "r", encoding="iso8859-1") as f:
+                        patch_text = f.read()
+
+            # Search for one or more "CVE-XXXX-XXXX+" lines
+            for match in cve_match.finditer(patch_text):
+                found_cves.append(match.group())
+
+            if len(found_cves):
+                dbg("Patches: Found CVEs for Someone: %s" % json.dumps(found_cves))
+
+            for cve in found_cves:
+                entry = patched_dict.get(cve, list())
+                if patch_name not in entry:
+                    entry.append(patch_name)
+                patched_dict.update({cve: entry})
+
+        if len(patched_dict.keys()):
+            dbg("Patches: Patched CVEs for Someone: %s" % json.dumps(patched_dict))
+
+        return {
+            key: sorted(patched_dict[key])
+            for key in sorted(patched_dict.keys())
+        }
+
+
+    def _pkg_patches(pkg):
+        makefile = pkg.get('makefile', '')
+        patch_list = []
+
+        if not makefile:
+            return
+
+        makedir = os.path.dirname(makefile)
+        for subdir, _, _ in os.walk(makedir):
+            patch_list.extend(
+                fnmatch.filter(
+                    [p.path for p in os.scandir(subdir)],
+                    '*.patch'
+                )
+            )
+        
+        # Include patches in global patch directory
+        if global_patch_dir:
+            pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""), pkg.get("version", pkg.get("cve_version", "")))
+            if not os.path.exists(pkg_patch_dir):
+                pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""))
+            
+            if os.path.exists(pkg_patch_dir):
+                patch_list.extend(
+                    fnmatch.filter(
+                        [p.path for p in os.scandir(pkg_patch_dir)],
+                        '*.patch'
+                    )
+                )
+        
+        if patch_list:
+            pkg['patches'] = sorted([
+                os.path.basename(p) for p in patch_list
+            ])
+            pkg['patched_cves'] = _patched_cves(patch_list)
+            if pkg['patched_cves']:
+                dbg("Patched CVEs for %s" % pkg['name'],
+                    [
+                        "Total Patches: %d" % len(patch_list),
+                        "Patch List: %s" % json.dumps(
+                            patch_list,
+                            indent=12,
+                            sort_keys=True
+                        ),
+                        "CVEs: %s" % json.dumps(
+                            pkg['patched_cves'],
+                            indent=12,
+                            sort_keys=True
+                        )
+                    ]
+                )
+
+    config_dict = vgls.get('config', {})
+    global_patch_dir = config_dict.get("global-patch-dir", None)
+
+    for pkg, pkg_dict in vgls.get("packages", {}).items():
+        _pkg_patches(pkg_dict)
+    return vgls['packages']
+
 
 def get_package_info(vgls):
     config_dict = vgls.get('config', {})
@@ -123,111 +235,6 @@ def get_package_info(vgls):
         dbg("Found %d packages" % len(pkg_dict.keys()))
         return pkg_dict
 
-
-    def _patched_cves(src_patches):
-        patched_dict = dict()
-
-        cve_match = re.compile("CVE\-\d{4}\-\d+")
-
-        # Matches last CVE-1234-211432 in the file name, also if written
-        # with small letters. Not supporting multiple CVE id's in a single
-        # file name.
-        cve_file_name_match = re.compile(".*([Cc][Vv][Ee]\-\d{4}\-\d+)")
-
-        for patch_path in src_patches:
-            found_cves = list()
-
-            patch_name = os.path.basename(patch_path)
-            # Check patch file name for CVE ID
-            fname_match = cve_file_name_match.search(patch_name)
-            if fname_match:
-                cve = fname_match.group(1).upper()
-                found_cves.append(cve)
-
-            with open(patch_path, "r", encoding="utf-8") as f:
-                try:
-                    patch_text = f.read()
-                except UnicodeDecodeError:
-                    info(vgls, "Failed to read patch %s using UTF-8 encoding"
-                          " trying with iso8859-1" % patch_path)
-                    f.close()
-                    with open(patch_path, "r", encoding="iso8859-1") as f:
-                        patch_text = f.read()
-
-            # Search for one or more "CVE-XXXX-XXXX+" lines
-            for match in cve_match.finditer(patch_text):
-                found_cves.append(match.group())
-
-            if len(found_cves):
-                dbg("Patches: Found CVEs for Someone: %s" % json.dumps(found_cves))
-
-            for cve in found_cves:
-                entry = patched_dict.get(cve, list())
-                if patch_name not in entry:
-                    entry.append(patch_name)
-                patched_dict.update({cve: entry})
-
-        if len(patched_dict.keys()):
-            dbg("Patches: Patched CVEs for Someone: %s" % json.dumps(patched_dict))
-
-        return {
-            key: sorted(patched_dict[key])
-            for key in sorted(patched_dict.keys())
-        }
-
-
-    def _pkg_patches(pkg):
-        makefile = pkg.get('makefile', '')
-        patch_list = []
-
-        if not makefile:
-            return
-
-        makedir = os.path.dirname(makefile)
-        for subdir, _, _ in os.walk(makedir):
-            patch_list.extend(
-                fnmatch.filter(
-                    [p.path for p in os.scandir(subdir)],
-                    '*.patch'
-                )
-            )
-        
-        # Include patches in global patch directory
-        if global_patch_dir:
-            pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""))
-            
-            for subdir, _, _ in os.walk(pkg_patch_dir):
-                patch_list.extend(
-                    fnmatch.filter(
-                        [p.path for p in os.scandir(subdir)],
-                        '*.patch'
-                    )
-                )
-        
-        if patch_list:
-            pkg['patches'] = sorted([
-                os.path.basename(p) for p in patch_list
-            ])
-            pkg['patched_cves'] = _patched_cves(patch_list)
-            if pkg['patched_cves']:
-                dbg("Patched CVEs for %s" % pkg['name'],
-                    [
-                        "Total Patches: %d" % len(patch_list),
-                        "Patch List: %s" % json.dumps(
-                            patch_list,
-                            indent=12,
-                            sort_keys=True
-                        ),
-                        "CVEs: %s" % json.dumps(
-                            pkg['patched_cves'],
-                            indent=12,
-                            sort_keys=True
-                        )
-                    ]
-                )
-
-
-
     pkg_list = _config_packages(config_dict)
 
     if not pkg_list:
@@ -244,7 +251,6 @@ def get_package_info(vgls):
         pkg_dict[name]['name'] = name
         pkg_dict[name]['makefile'] = makefile
         pkg_dict[name]['component_type'] = ["component"]
-        _pkg_patches(pkg_dict[name])
 
     write_intm_json(vgls, 'config-packages', pkg_dict)
     return pkg_dict

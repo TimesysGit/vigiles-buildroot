@@ -166,6 +166,9 @@ def collect_metadata(vgls):
         dbg("Getting U-Boot Info ...")
         get_uboot_info(vgls)
 
+    dbg("Getting Package Patches")
+    vgls['packages'] = packages.get_patches(vgls)
+
     dbg("Getting Package Checksums ...")
     vgls['packages'] = packages.get_checksum_info(vgls)
 
