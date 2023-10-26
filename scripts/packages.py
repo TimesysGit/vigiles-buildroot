@@ -78,7 +78,7 @@ def get_patches(vgls):
 
 
     def _pkg_patches(pkg):
-        makefile = pkg.get('makefile', '')
+        makefile = pkg_make_map.get(pkg.get("rawname", pkg.get("name")), "")
         patch_list = []
 
         if not makefile:
@@ -129,6 +129,7 @@ def get_patches(vgls):
                     ]
                 )
 
+    pkg_make_map = vgls.get("pkg_make_map", {})
     config_dict = vgls.get('config', {})
     global_patch_dir = config_dict.get("global-patch-dir", None)
 
@@ -210,8 +211,6 @@ def get_package_info(vgls):
                     # Strip ending ".mk"
                     pkgname = f[:-3]
                     pkgname = all_pkg_make_info.get(pkgname, {}).get("name", kconfig_to_py(pkgname))
-                    if package_list and pkgname not in package_list:
-                        continue
                     pkgpath = os.path.join(root, f)
                     skip = False
                     for exclude in WALK_EXCLUDES:
@@ -221,8 +220,13 @@ def get_package_info(vgls):
                             continue
                     if skip:
                         continue
-                    pkg_dict[pkgname] = os.path.relpath(pkgpath)
+                    if package_list and pkgname in package_list:
+                        pkg_dict[pkgname] = os.path.relpath(pkgpath)
                     
+                    # add makefiles to pkg_make_map map
+                    pkg_make_map[pkgname] = os.path.relpath(pkgpath)
+
+        pkg_make_map = defaultdict()
         pkg_dict = defaultdict()
         
         _get_pkg_dict(".")
@@ -233,6 +237,7 @@ def get_package_info(vgls):
                 _get_pkg_dict(d)
 
         dbg("Found %d packages" % len(pkg_dict.keys()))
+        vgls["pkg_make_map"] = pkg_make_map
         return pkg_dict
 
     pkg_list = _config_packages(config_dict)
