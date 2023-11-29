@@ -85,8 +85,6 @@ br2_internal_pkg_vars = [
 ]
 
 br2_user_pkg_vars = [
-    'cve-product',
-    'cve-version',
     'ignore-cves',
     'license',
     'version',
@@ -375,6 +373,14 @@ def _fixup_make_info(vgls):
         if rawname != name:
             rawname_fixups[name] = rawname
 
+        # Get cve_product and cve_version from cpe variables
+        cpe_product = pdict.get('cpe-id-product')
+        if cpe_product:
+            pdict["cve-product"] = cpe_product
+        cpe_version = pdict.get('cpe-id-version')
+        if cpe_version:
+            pdict["cve-version"] = cpe_version
+
     for current, needed in rawname_fixups.items():
         pkg_dict[needed] = pkg_dict.pop(current, {})
         pkg_dict[needed]['name'] = needed
@@ -411,6 +417,7 @@ def _fixup_make_info(vgls):
             del pkg_dict[name]['spdx-org']
 
     for name, pdict in pkg_dict.items():
+        pdict['version'] = _sanitize_version(vgls, pdict['version'])
         pdict['cve-version'] = _sanitize_version(vgls, pdict['cve-version'])
         if 'builddir' in pdict:
             pdict['builddir'] = os.path.join(vgls['bdir'], pdict['builddir'])

@@ -158,20 +158,22 @@ def get_kernel_info(vgls):
     linux_dict = vgls['packages']['linux']
     kdir = linux_dict.get('builddir', '')
 
-    linux_dict['cve-product'] = 'linux_kernel'
+    if not linux_dict.get('cve-product'):
+        linux_dict['cve-product'] = 'linux_kernel'
 
     if not kdir:
         warn("Kernel Config: Build directory not defined.")
         return None
 
-    if os.path.exists(kdir):
-        ver = _get_version_from_makefile(kdir)
-    else:
-        warn("Linux Kernel: Build directory does not exist: %s" % kdir)
-        return None
+    if not linux_dict.get('cve-version') or linux_dict.get('cve-version') == 'unset':
+        if os.path.exists(kdir):
+            ver = _get_version_from_makefile(kdir)
+        else:
+            warn("Linux Kernel: Build directory does not exist: %s" % kdir)
+            return None
 
-    dbg("Kernel Version: %s" % ver)
-    linux_dict['cve-version'] = ver
+        dbg("Kernel Version: %s" % ver)
+        linux_dict['cve-version'] = ver
 
     kconfig_out = 'none'
     config_opts = _kernel_config(vgls, kdir)
@@ -227,21 +229,23 @@ def get_uboot_info(vgls):
     uboot_dict = vgls['packages']['uboot']
     udir = uboot_dict.get('builddir', '')
 
-    uboot_dict['cve-product'] = 'u-boot'
+    if not uboot_dict.get('cve-product'):
+        uboot_dict['cve-product'] = 'u-boot'
 
     if not udir:
         warn("U-Boot Config: Build directory not defined.")
         return None
 
-    if os.path.exists(udir):
-        ver = _get_version_from_makefile(udir, with_extra=False)
-    else:
-        warn("U-Boot Config: Build directory does not exist.")
-        warn("\tU-Boot build directory: %s" % udir)
-        return None
+    if not uboot_dict.get('cve-version') or uboot_dict.get('cve-version') == 'unset':
+        if os.path.exists(udir):
+            ver = _get_version_from_makefile(udir, with_extra=False)
+        else:
+            warn("U-Boot Config: Build directory does not exist.")
+            warn("\tU-Boot build directory: %s" % udir)
+            return None
 
-    uboot_dict['cve-version'] = ver
-    dbg("U-Boot Version: %s" % ver)
+        uboot_dict['cve-version'] = ver
+        dbg("U-Boot Version: %s" % ver)
 
     uconfig_out = 'none'
     config_opts = _uboot_config(vgls, udir)

@@ -416,6 +416,21 @@ Buildroot includes packages/config scripts lacking version information (Ex. init
 In the generated SBOM for such packages version is set to the Buildroot version or the Buildroot commit hash.
 
 
+#### Setting CPE ID variables 
+
+Buildroot allows to define a set of variables in package's makefile
+(`<package-name>.mk`), to specify its CPE identifier.
+For instance, in the case of the busybox package, these variables such as product, version, vendor, etc. can be set in busybox.mk as below
+
+<pre>
+BUSYBOX_CPE_ID_PRODUCT = busybox
+BUSYBOX_CPE_ID_VERSION = 1.36.1
+BUSYBOX_CPE_ID_VENDOR = busybox
+</pre>
+
+The vigiles-buildroot uses these variables to generate a cpe id if it is not already specified
+
+
 Maintenance
 ===========
 
