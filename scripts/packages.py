@@ -93,19 +93,20 @@ def get_patches(vgls):
                 )
             )
         
-        # Include patches in global patch directory
-        if global_patch_dir:
-            pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""), pkg.get("version", pkg.get("cve_version", "")))
-            if not os.path.exists(pkg_patch_dir):
-                pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""))
-            
-            if os.path.exists(pkg_patch_dir):
-                patch_list.extend(
-                    fnmatch.filter(
-                        [p.path for p in os.scandir(pkg_patch_dir)],
-                        '*.patch'
+        # Include patches from global patch directories
+        if global_patch_dirs:
+            for global_patch_dir in global_patch_dirs:
+                pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""), pkg.get("version", pkg.get("cve_version", "")))
+                if not os.path.exists(pkg_patch_dir):
+                    pkg_patch_dir = os.path.join(global_patch_dir, pkg.get("name", ""))
+                
+                if os.path.exists(pkg_patch_dir):
+                    patch_list.extend(
+                        fnmatch.filter(
+                            [p.path for p in os.scandir(pkg_patch_dir)],
+                            '*.patch'
+                        )
                     )
-                )
         
         if patch_list:
             pkg['patches'] = sorted([
@@ -131,7 +132,7 @@ def get_patches(vgls):
 
     pkg_make_map = vgls.get("pkg_make_map", {})
     config_dict = vgls.get('config', {})
-    global_patch_dir = config_dict.get("global-patch-dir", None)
+    global_patch_dirs = config_dict.get("global-patch-dir", "").split()
 
     for pkg, pkg_dict in vgls.get("packages", {}).items():
         _pkg_patches(pkg_dict)
@@ -142,7 +143,6 @@ def get_package_info(vgls):
     config_dict = vgls.get('config', {})
     all_pkg_make_info = vgls.get('all_pkg_make_info', {})
     pkg_dict = defaultdict(lambda: defaultdict(dict))
-    global_patch_dir = config_dict.get("global-patch-dir", None)
 
     def _config_packages(config_dict):
         config_pkgs = set()
