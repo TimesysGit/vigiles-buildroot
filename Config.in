@@ -4,14 +4,14 @@ menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
     help
       This option enables an additional Post-Image step that gathers metadata
       about the installed packages (name, version, applied patches, etc). and
-      submits a manifest to the Timesys LinuxLink Vigiles service in exchange
-      for a reports that lists the CVEs known to affect the configuration.
+      submits a SBOM to the Timesys LinuxLink Vigiles service in exchange
+      for a report that lists the CVEs known to affect the configuration.
 
       The process will also collect and submit the .config files for the
       Linux Kernel and U-Boot (if configured) and submit them along with the
-      manifest for additional CVE filtering.
+      SBOM for additional CVE filtering.
 
-      The manifest, config files and report will be placed in a subdirectory
+      The SBOM, config files and report will be placed in a subdirectory
       of the build by default:
 
         vigiles/
@@ -127,9 +127,9 @@ config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
 comment "Customizing / Amending Vigiles Report"
 
 config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
-    string "Custom Manifest and Report Name"
+    string "Custom SBOM and Report Name"
     help
-      By default, the file names of the Vigiles Manifest to be uploaded and
+      By default, the file names of the Vigiles SBOM to be uploaded and
       the CVE Report that is generated are given names based on the values of
       BR2_HOSTNAME and BR2_DEFCONFIG (or the target CPU).
 
@@ -141,10 +141,10 @@ config BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME
     string "Subfolder name"
     depends on !VIGILES_GENERATE_SBOM_ONLY
     help
-      By default, your manifest will be uploaded to the location specified in
+      By default, your SBOM will be uploaded to the location specified in
       the Dashboard Config. If a subfolder name is specified, Vigiles will
       first check if a subfolder with that name exists in that location
-      and upload there. Otherwise, a subfolder will be created to upload to.
+      and upload it there. Otherwise, a subfolder will be created to upload to.
 
 
 config BR2_EXTERNAL_VIGILES_INCLUDE_CSV
@@ -152,11 +152,11 @@ config BR2_EXTERNAL_VIGILES_INCLUDE_CSV
     help
       This option may be set to the pathname of a (CSV) file containing a list
       of packages (and optionally their version(s)) to include in the Vigiles
-      Manifest and Report when checking for CVEs.
+      SBOM and Report when checking for CVEs.
 
       This is useful when additional software is included on the final system
       that may not be built through the regular Buildroot process and therefore
-      wouldn't be included by default in the generated Vigiles Manifest.
+      wouldn't be included by default in the generated Vigiles SBOM.
 
       If unsure, leave unset.
 
@@ -164,7 +164,7 @@ config BR2_EXTERNAL_VIGILES_EXCLUDE_CSV
     string "Packages to Exclude from Report"
     help
       This option may be set to the pathname of a (CSV) file containing a list
-      of packages to exclude from the Vigiles Manifest and Report when checking
+      of packages to exclude from the Vigiles SBOM and Report when checking
       for CVEs.
 
       This is useful when packages that are built by default and are (or appear
@@ -177,7 +177,7 @@ config BR2_EXTERNAL_VIGILES_EXCLUDE_CSV
       positives, or worse: omit relevant CVEs.
 
       See the companion option "Additional Packages to Include in Report" to
-      include packages in the Vigiles Manifest and Report that are built
+      include packages in the Vigiles SBOM and Report that are built
       externally.
 
       If unsure, leave unset.
@@ -199,12 +199,12 @@ config BR2_EXTERNAL_VIGILES_WHITELIST_CSV
 	  If unsure, leave unset.
 
 config BR2_EXTERNAL_VIGILES_UPLOAD_ONLY
-    bool "Upload Manifest Only"
+    bool "Upload SBOM Only"
     depends on !VIGILES_GENERATE_SBOM_ONLY
     help
-      In some cases, it may be desired to upload the Vigiles Manifest for a
+      In some cases, it may be desired to upload the Vigiles SBOM for a
       build without generating a CVE Report. This can speed up build times and
-      ease reporting of automated bulk builds.
+      ease the reporting of automated bulk builds.
 
       This behavior can be enabled by enabling this option.
 
@@ -262,7 +262,7 @@ config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
       environment variable VIGILES_DASHBOARD_CONFIG to the location of an
       alternate Dashboard Config file.
 
-      By default your manifest will be uploaded to your "Private Workspace"
+      By default your SBOM will be uploaded to your "Private Workspace"
       Product on the Vigiles Dashboard. This can be changed by downloading the
       "Dashboard Config" for an alternative Product and/or Folder.
 
@@ -289,8 +289,8 @@ config VIGILES_ENABLE_EXPERT
     bool "Enable Vigiles Advanced and Debugging Options (Expert)"
     default n
     help
-      This options enables some development options for debugging the
-      Vigiles manifest generation and CVE reporting.
+      This option enables some development options for debugging the
+      Vigiles SBOM generation and CVE reporting.
 
       If unsure, say N.
 
