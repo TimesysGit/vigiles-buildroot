@@ -102,9 +102,13 @@ def parse_args():
 
     set_debug(args.debug)
 
+    sbom_only = os.getenv('GENERATE_SBOM_ONLY', None)
+    if sbom_only is not None:
+        sbom_only = sbom_only.lower() == "true"
+
     vgls = {
         'write_intm': args.write_intm,
-        'do_check': args.do_check,
+        'do_check': args.do_check if sbom_only is None else not bool(sbom_only),
         'topdir': args.idir.strip() \
             if args.idir else os.path.abspath(os.curdir),
         'odir': args.odir.strip() if args.odir else None,

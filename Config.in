@@ -139,6 +139,7 @@ config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
 
 config BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME
     string "Subfolder name"
+    depends on !VIGILES_GENERATE_SBOM_ONLY
     help
       By default, your manifest will be uploaded to the location specified in
       the Dashboard Config. If a subfolder name is specified, Vigiles will
@@ -199,6 +200,7 @@ config BR2_EXTERNAL_VIGILES_WHITELIST_CSV
 
 config BR2_EXTERNAL_VIGILES_UPLOAD_ONLY
     bool "Upload Manifest Only"
+    depends on !VIGILES_GENERATE_SBOM_ONLY
     help
       In some cases, it may be desired to upload the Vigiles Manifest for a
       build without generating a CVE Report. This can speed up build times and
@@ -241,10 +243,12 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
 
 
 comment "Timesys Vigiles Dashboard Options"
+    depends on !VIGILES_GENERATE_SBOM_ONLY
 
 config VIGILES_ENABLE_DASHBOARD_CONFIG
     bool "Use a custom Vigiles Dashboard Configuration"
     default n
+    depends on !VIGILES_GENERATE_SBOM_ONLY
 
 config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
     string "Timesys Vigiles Dashboard Config Location"
@@ -307,6 +311,12 @@ config VIGILES_INCLUDE_VIRTUAL_PACKAGES
     default n
     help
       This option will include virtual packages in generated SBOM. 
+
+config VIGILES_GENERATE_SBOM_ONLY
+    bool "Generate SBOM only"
+    default n
+    help
+      This option will only generate SBOM locally. 
 
 endif
 

@@ -355,8 +355,10 @@ These features are not supported and no documentation is provided for them.
 ```
                *** Advanced Vigiles / Debug Options ***
         [*]   Enable Vigiles Advanced and Debugging Options (Expert)
-        [ ]     Generate Manifest but don't Submit for Checking
+        [ ]   Enable Verbose Console Output
         [ ]     Write Intermediate JSON Files of Collected Metadata
+        [ ]   Include virtual packages in SBOM
+        [ ]   Generate SBOM only (NEW)
 ```
 
 ### Including Virtual Packages in generated SBOM
@@ -370,6 +372,17 @@ This option can be found under Advanced Vigiles option
 This option will include the virtual packages in generated SBOM. By default vigiles-buildroot
 will exclude the virtual packages from generated SBOM.
 
+### Generating SBOM only
+
+This option can be found under the Advanced Vigiles option
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        [ ]   Generate SBOM only
+```
+This option will only generate the SBOM. By default the generated SBOM is also
+uploaded to vigiles for a vulnerability scan.
+Set an environment variable GENERATE_SBOM_ONLY=True to override the setting in menuconfig.
 
 ### Other Notes
 

@@ -105,6 +105,10 @@ ifeq ($(VIGILES_INCLUDE_VIRTUAL_PACKAGES),y)
 vigiles-opts    += -v
 endif
 
+ifeq ($(VIGILES_GENERATE_SBOM_ONLY),y)
+vigiles-opts    += -M
+endif
+
 
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
