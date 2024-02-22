@@ -113,10 +113,7 @@ def _get_make_variables(packages):
     package_vars = []
 
     for p in packages:
-        package_vars.extend([
-            '-'.join([p, var])
-            for var in br2_internal_pkg_vars + br2_user_pkg_vars + br2_cpe_id_components
-        ])
+        package_vars.append("%s-%%" % p)
 
     br2_single = [
         '-'.join(['br2', var])
@@ -300,6 +297,8 @@ def _transform_make_info(vgls, variable_list):
                 pkgname = key[:-len(pkgvar)]
                 if pkgkey == 'rawname':
                     value = value.split(' ')[0]
+                if pkgname not in pkg_dict.keys():
+                    continue
                 pkg_dict[pkgname][pkgkey] = value
                 break
 
