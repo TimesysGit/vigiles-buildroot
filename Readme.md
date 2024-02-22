@@ -358,6 +358,7 @@ These features are not supported and no documentation is provided for them.
         [ ]   Enable Verbose Console Output
         [ ]     Write Intermediate JSON Files of Collected Metadata
         [ ]   Include virtual packages in SBOM
+        ()    Vigiles output location
         [ ]   Generate SBOM only (NEW)
 ```
 
@@ -383,6 +384,19 @@ This option can be found under the Advanced Vigiles option
 This option will only generate the SBOM. By default the generated SBOM is also
 uploaded to vigiles for a vulnerability scan.
 Set an environment variable GENERATE_SBOM_ONLY=True to override the setting in menuconfig.
+
+### Specifying location for Vigiles output
+
+This option can be found under Advanced Vigiles option
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        ()   Vigiles output location
+```
+This option specifies the location of the vigiles output files
+like SBOM, report and vigiles logs. The default location is `<buildroot>/output/vigiles` directory.
+Environment variable VIGILES_OUTPUT_DIR can be used to override this config.
+
 
 ### Other Notes
 

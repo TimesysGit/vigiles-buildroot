@@ -310,7 +310,13 @@ config VIGILES_INCLUDE_VIRTUAL_PACKAGES
     bool "Include virtual packages in SBOM"
     default n
     help
-      This option will include virtual packages in generated SBOM. 
+      This option will include virtual packages in generated SBOM.
+
+config BR2_EXTERNAL_VIGILES_OUTPUT
+    string "Vigiles output location"
+    help
+      This option specifies the location of the vigiles output files
+      like SBOM, report and vigiles logs
 
 config VIGILES_GENERATE_SBOM_ONLY
     bool "Generate SBOM only"

@@ -109,6 +109,10 @@ ifeq ($(VIGILES_GENERATE_SBOM_ONLY),y)
 vigiles-opts    += -M
 endif
 
+vigiles-output	:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_OUTPUT))
+ifneq ($(vigiles-output),)
+vigiles-opts	+= -O "$(vigiles-output)"
+endif
 
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize

@@ -98,6 +98,8 @@ def parse_args():
     parser.add_argument('-v', '--include-virtual', dest='include_virtual_pkgs',
                         help='Include virtual packages in generated SBOM',
                         action='store_true')
+    parser.add_argument('-O', '--vigiles-output', dest='vigiles_output',
+                        help='Location of vigiles output folder')
     args = parser.parse_args()
 
     set_debug(args.debug)
@@ -127,14 +129,34 @@ def parse_args():
         'llkey': args.llkey.strip() if args.llkey else '',
         'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
         'upload_only': args.upload_only,
-        'include_virtual_pkgs': args.include_virtual_pkgs
+        'include_virtual_pkgs': args.include_virtual_pkgs,
+        'vigiles_output': args.vigiles_output
     }
 
     if not vgls.get('odir', None):
         vgls['odir'] = os.path.join(vgls['topdir'], 'output')
     if not vgls.get('bdir', None):
         vgls['bdir'] = os.path.join(vgls['odir'], 'build')
-    vgls['vdir'] = os.path.join(vgls['odir'], VIGILES_DIR)
+    
+    vdir_env_pth = os.getenv('VIGILES_OUTPUT_DIR')
+
+    vdir = ""
+    if vdir_env_pth:
+        vdir = vdir_env_pth
+    elif vgls.get('vigiles_output'):
+        vdir = vgls['vigiles_output']
+    
+    if vdir:
+        if not os.path.exists(vdir):
+            warn("Vigiles output directory %s doesnt exists. SBOM will be generated at default location." % vdir)
+            vdir = os.path.join(vgls['odir'], VIGILES_DIR)
+        if not os.access(vdir, os.W_OK):
+            warn("Vigiles output directory %s is not writable. SBOM will be generated at default location." % vdir)
+            vdir = os.path.join(vgls['odir'], VIGILES_DIR)  
+    else:
+        vdir = os.path.join(vgls['odir'], VIGILES_DIR)
+
+    vgls['vdir'] = vdir
 
     dbg("Vigiles Buildroot Config: %s" %
         json.dumps(vgls, indent=4, sort_keys=True))
