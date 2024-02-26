@@ -141,13 +141,14 @@ def _get_make_variables(packages):
 def _run_make(mk_opts=[], mk_args=[], mk_context=[]):
     mk_cmd = ['make', '-s']
 
+    mk_output = ""
     try:
         mk_output = subprocess.check_output(
             mk_context + mk_cmd + mk_opts + mk_args
         ).decode()
     except Exception as exc:
-        err([
-            'Could not execute Make',
+        err('Could not execute Make',
+        [    
             f'Command:   {mk_cmd}',
             f'Arguments: {mk_args}',
             f'Context:   {mk_context}',
@@ -510,7 +511,7 @@ def get_all_pkg_make_info(odir):
     variable_list = _get_make_output(odir, var_string)
     if not variable_list:
         warn('No make variables found')
-        return None
+        return make_dict
     
     for var in variable_list:
         key, value = var.split("=")
