@@ -45,13 +45,14 @@ import sys
 import json
 
 from buildroot import get_config_options, get_make_info, get_all_pkg_make_info
-from manifest import VIGILES_DIR, write_manifest
+from manifest import VIGILES_DIR, write_manifest, ALLOWED_SBOM_FORMATS
 import packages
 from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
 
 from utils import set_debug, set_verbose
-from utils import dbg, info, warn
+from utils import dbg, info, warn, err
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -100,7 +101,16 @@ def parse_args():
                         action='store_true')
     parser.add_argument('-O', '--vigiles-output', dest='vigiles_output',
                         help='Location of vigiles output folder')
+    parser.add_argument('-f', '--sbom-format', dest='sbom_format',
+                        help='Format of generated sbom like cyclonedx',
+                        default='vigiles')
     args = parser.parse_args()
+
+    sbom_format = args.sbom_format.strip().lower()
+    if sbom_format not in ALLOWED_SBOM_FORMATS.values():
+        err("%s is not a supported SBOM format choose from: %s" % (
+            sbom_format, ALLOWED_SBOM_FORMATS.values()))
+        sys.exit(1)
 
     set_debug(args.debug)
 
@@ -130,7 +140,8 @@ def parse_args():
         'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
         'upload_only': args.upload_only,
         'include_virtual_pkgs': args.include_virtual_pkgs,
-        'vigiles_output': args.vigiles_output
+        'vigiles_output': args.vigiles_output,
+        'sbom_format': args.sbom_format.strip()
     }
 
     if not vgls.get('odir', None):

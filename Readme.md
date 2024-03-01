@@ -29,7 +29,13 @@ To generate a vulnerability report follow the below steps:
     git clone https://github.com/TimesysGit/vigiles-buildroot
     ```
 
-2. Download your LinuxLink Key File here and store it at the (recommended) path.
+2. Install dependencies
+
+    ```sh
+    pip install vigiles-buildroot/requirements.txt
+    ```
+
+3. Download your LinuxLink Key File here and store it at the (recommended) path.
 
     ```sh
     mkdir $HOME/timesys
@@ -40,7 +46,7 @@ To generate a vulnerability report follow the below steps:
     >
     > See below for instructions.
 
-3. Instruct Buildroot to include the Vigiles interface in its configuration.
+4. Instruct Buildroot to include the Vigiles interface in its configuration.
     ```sh
     make BR2_EXTERNAL=/path/to/vigiles-buildroot menuconfig
     ```
@@ -53,13 +59,13 @@ To generate a vulnerability report follow the below steps:
 
     > For more information on using external Buildroot interfaces, please see **[This Section of the Buildroot Documentation](https://buildroot.org/downloads/manual/manual.html#outside-br-custom)**
 
-4. Execute Make with the Vigiles target
+5. Execute Make with the Vigiles target
     ```sh
     make vigiles-check
     ```
 
 
-5. View the Vigiles CVE (Text) Report Locally
+6. View the Vigiles CVE (Text) Report Locally
 
     The CVE report will be located in the ```vigiles/``` subdirectory of your Buildroot build output, with a name based on the Target configuration; e.g.:
     ```sh
@@ -67,7 +73,7 @@ To generate a vulnerability report follow the below steps:
         3616 output/vigiles/buildroot-imx8mpico-report.txt
     ```
 
-6. View the Vigiles CVE Online Report
+7. View the Vigiles CVE Online Report
 
     The local CVE text report will contain a link to a comprehensive and graphical report; e.g.:
     ```
@@ -396,6 +402,17 @@ This option can be found under Advanced Vigiles option
 This option specifies the location of the vigiles output files
 like SBOM, report and vigiles logs. The default location is `<buildroot>/output/vigiles` directory.
 Environment variable VIGILES_OUTPUT_DIR can be used to override this config.
+
+### Specifying SBOM formats
+
+This option can be found under Advanced Vigiles option
+
+```             *** Advanced Vigiles / Debug Options ***
+        Select SBOM format -->
+```
+
+This option can be used to specify the format of SBOM to be generated. At present
+vigiles-buildroot supports generating SBOMs in `Cyclonedx 1.4 JSON` and `Vigiles JSON` formats. By default, `Vigiles JSON` format SBOM will be generated.
 
 
 ### Other Notes

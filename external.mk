@@ -114,6 +114,12 @@ ifneq ($(vigiles-output),)
 vigiles-opts	+= -O "$(vigiles-output)"
 endif
 
+ifeq ($(VIGILES_SBOM_FORMAT_VIGILES),y)
+vigiles-opts    += -f "vigiles"
+else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
+vigiles-opts    += -f "cyclonedx_1.4"
+endif
+
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")

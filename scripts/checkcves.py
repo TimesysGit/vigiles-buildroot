@@ -421,7 +421,7 @@ def vigiles_request(vgls_chk):
         manifest_data = read_manifest(manifest_path)
 
     manifest = json.loads(manifest_data)
-    if len(manifest['packages']) == 0:
+    if len(manifest.get('packages', manifest.get('components'))) == 0:
         print('No packages found in manifest.\n')
         sys.exit(1)
 

@@ -318,6 +318,24 @@ config BR2_EXTERNAL_VIGILES_OUTPUT
       This option specifies the location of the vigiles output files
       like SBOM, report and vigiles logs
 
+choice
+    prompt "Select SBOM format"
+    default VIGILES_SBOM_FORMAT_VIGILES
+    help
+        Select the SBOM format. Default is Vigiles JSON format.
+
+config VIGILES_SBOM_FORMAT_VIGILES
+    bool "Vigiles JSON"
+    help
+        Generate SBOM in Vigiles JSON format
+
+config VIGILES_SBOM_FORMAT_CYCLONEDX_1.4
+    bool "CycloneDX 1.4 JSON"
+    help
+        Generate SBOM in CycloneDX 1.4 JSON format
+
+endchoice
+
 config VIGILES_GENERATE_SBOM_ONLY
     bool "Generate SBOM only"
     default n

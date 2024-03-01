@@ -11,13 +11,16 @@
 import json
 import os
 import subprocess
+import sys
 import time
 
 from utils import mkdirhier
-from utils import dbg, info, warn
+from utils import dbg, info, warn, err
 
 from amendments import amend_manifest
 
+ALLOWED_SBOM_FORMATS = {"VIGILES": "vigiles","CDX1.4": "cyclonedx_1.4"}
+DEFAULT_SUPPLIER = 'Buildroot ()'
 VIGILES_DIR = 'vigiles'
 VIGILES_DEFAULT_DISTRO = 'buildroot'
 VIGILES_DEFAULT_IMAGE = 'rootfs'
@@ -25,6 +28,9 @@ VIGILES_DEFAULT_MANIFEST = 'buildroot-rootfs.json'
 VIGILES_DEFAULT_REPORT = 'buildroot-rootfs-report.txt'
 VIGILES_MANIFEST_VERSION = '1.22'
 VIGILES_MANIFEST_NAME_MAX_LENGTH = 256
+VIGILES_TOOL_NAME = "vigiles-buildroot"
+VIGILES_TOOL_VENDOR = "Timesys Corporation"
+VIGILES_TOOL_VERSION = "1.15.0"
 
 
 def _get_machine_name(vgls):
@@ -47,6 +53,15 @@ def _limit_manifest_name_length(name, max_limit):
         warn("Manifest Name: Only the first %d characters will be used for the manifest name." % max_limit)
     return name[:max_limit]
 
+def _get_sbom_name(vgls):
+    _hostname = vgls['config'].get('target-generic-hostname', 'buildroot')
+    _machine = _get_machine_name(vgls)
+    _name = vgls.get('manifest_name')
+    if not _name:
+        _name = '-'.join([_hostname, _machine])
+
+    _name = _limit_manifest_name_length(_name, VIGILES_MANIFEST_NAME_MAX_LENGTH)
+    return _name
 
 def _init_manifest(vgls):
     def _stripped_packages(pkgs):
@@ -76,11 +91,6 @@ def _init_manifest(vgls):
 
     _hostname = vgls['config'].get('target-generic-hostname', 'buildroot')
     _machine = _get_machine_name(vgls)
-    _name = vgls.get('manifest_name')
-    if not _name:
-        _name = '-'.join([_hostname, _machine])
-
-    _name = _limit_manifest_name_length(_name, VIGILES_MANIFEST_NAME_MAX_LENGTH)
 
     build_dict = {
         'arch': vgls['config']['arch'],
@@ -93,34 +103,44 @@ def _init_manifest(vgls):
         'image': VIGILES_DEFAULT_IMAGE,
         'machine': _machine,
         'manifest_version': VIGILES_MANIFEST_VERSION,
-        'manifest_name': _name,
+        'manifest_name': _get_sbom_name(vgls),
         'packages': _stripped_packages(vgls['packages'])
     }
     return build_dict
 
 
-def _make_file_name(vgls, manifest_dict, suffix, ext):
-    file_spec = "-".join([manifest_dict["manifest_name"][:VIGILES_MANIFEST_NAME_MAX_LENGTH - len(suffix) - len(ext) - 3], suffix])
+def _make_file_name(vgls, manifest_name, suffix, ext):
+    file_spec = "-".join([manifest_name[:VIGILES_MANIFEST_NAME_MAX_LENGTH - len(suffix) - len(ext) - 3], suffix])
     file_name = '.'.join([file_spec, ext])
     file_path = os.path.join(vgls['vdir'], file_name)
     return file_path
 
 
-def _manifest_name(vgls, manifest_dict):
-    return _make_file_name(vgls, manifest_dict, 'manifest', 'json')
+def _manifest_name(vgls, manifest_name):
+    return _make_file_name(vgls, manifest_name, 'manifest', 'json')
 
 
-def _report_name(vgls, manifest_dict):
-    return _make_file_name(vgls, manifest_dict, 'report', 'txt')
+def _report_name(vgls, manifest_name):
+    return _make_file_name(vgls, manifest_name, 'report', 'txt')
 
 
 def write_manifest(vgls):
-    final = _init_manifest(vgls)
+    sbom_format = vgls.get("sbom_format", "")
+    vgls["manifest_name"] = _get_sbom_name(vgls)
 
-    amend_manifest(vgls, final)
+    if sbom_format.lower() == ALLOWED_SBOM_FORMATS["CDX1.4"]:
+        from cyclonedx_sbom import create_cyclonedx_sbom
+        final = create_cyclonedx_sbom(vgls)
+        
+    elif sbom_format.lower() == ALLOWED_SBOM_FORMATS["VIGILES"]:
+        final = _init_manifest(vgls)
+        amend_manifest(vgls, final)
+    else:
+        err("%s SBOM format currently not supported" % sbom_format)
+        sys.exit(1)
 
-    vgls['manifest'] = _manifest_name(vgls, final)
-    vgls['report'] = _report_name(vgls, final)
+    vgls['manifest'] = _manifest_name(vgls, vgls["manifest_name"])
+    vgls['report'] = _report_name(vgls, vgls["manifest_name"])
 
     mkdirhier(vgls['vdir'])
 

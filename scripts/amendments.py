@@ -7,20 +7,14 @@ from collections import defaultdict
 from utils import mkdirhier
 from utils import dbg, info, warn
 
-def _get_addl_packages(extra_csv):
-    if not extra_csv:
-        return {}
+
+def _parse_addl_pkg_csv(extra_csv):
+    extra_rows = []
 
     if not os.path.exists(extra_csv):
         warn("Skipping Non-Existent additional-package File: %s" % extra_csv)
-        return {}
-
-    additional = {
-        'additional_licenses': defaultdict(str),
-        'additional_packages': defaultdict(dict)
-    }
-
-    extra_rows = []
+        return extra_rows
+    
     try:
         with open(extra_csv) as csv_in:
             reader = csv.reader(csv_in)
@@ -42,15 +36,28 @@ def _get_addl_packages(extra_csv):
                 extra_rows.append([pkg,ver,license])
     except Exception as e:
         warn("Additional Packages: %s" % e)
-        return {}
-
-    if not extra_rows:
-        return {}
-
-    # Check for a CSV header of e.g. "package,version,license" and skip it
+        return []
+    
+    # Check for a CSV header of e.g. "product,version,license" and skip it
     header = extra_rows[0]
     if header[0].lower() == "product":
         extra_rows = extra_rows[1:]
+
+    return extra_rows
+
+
+def _get_addl_packages(extra_csv):
+    if not extra_csv:
+        return {}
+
+    additional = {
+        'additional_licenses': defaultdict(str),
+        'additional_packages': defaultdict(dict)
+    }
+
+    extra_rows = _parse_addl_pkg_csv(extra_csv)
+    if not extra_rows:
+        return {}
 
     for row in extra_rows:
         pkg = row[0].replace(' ', '-')
@@ -108,11 +115,18 @@ def _filter_excluded_packages(vgls_pkgs, excld_pkgs):
     if not excld_pkgs or not vgls_pkgs:
         return
 
-    pkg_matches = list(set([
-        k
-        for k, v in vgls_pkgs.items()
-        if v.get('name', k) in excld_pkgs
-    ]))
+    pkg_matches = set()
+
+    for k,v in vgls_pkgs.items():
+        if v.get('name', k) in excld_pkgs:
+            pkg_matches.add(k)
+        
+        # Also exclude pkg as dependencies
+        for excld_pkg in excld_pkgs:
+            try:
+                v.get("dependencies", {}).get("build", []).remove(excld_pkg)
+            except ValueError:
+                pass
 
     info("Vigiles: Excluding Packages: %s" % sorted(pkg_matches))
     for pkg_key in pkg_matches:
@@ -124,7 +138,7 @@ def _get_user_whitelist(whtlst_csv):
         return []
 
     if not os.path.exists(whtlst_csv):
-        warn("Skipping Non-Existent CVE Whitelist File: %s" % excld_csv)
+        warn("Skipping Non-Existent CVE Whitelist File: %s" % whtlst_csv)
         return []
 
     dbg("Importing Whitelisted CVEs from %s" % whtlst_csv)

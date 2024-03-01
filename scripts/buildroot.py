@@ -17,9 +17,11 @@ import subprocess
 
 from collections import defaultdict
 
+from manifest import DEFAULT_SUPPLIER
 from utils import py_to_kconfig, kconfig_to_py, kconfig_bool
 from utils import write_intm_json
 from utils import dbg, info, warn, err
+
 
 def _find_dot_config(vgls):
     odir_dot_config = os.path.join(vgls['odir'], '.config')
@@ -412,7 +414,7 @@ def _fixup_make_info(vgls):
                 continue
 
         # Add package supplier
-        pkg_dict[name]['package-supplier'] = f"Organization: {pdict.get('spdx-org', 'Buildroot ()')}"
+        pkg_dict[name]['package-supplier'] = f"Organization: {pdict.get('spdx-org', DEFAULT_SUPPLIER)}"
         if 'spdx-org' in pdict.keys():
             del pkg_dict[name]['spdx-org']
 
