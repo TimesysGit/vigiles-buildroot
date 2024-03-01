@@ -182,7 +182,7 @@ def get_package_info(vgls):
 
         Originally from the pkg-stats script.
         """
-        WALK_USEFUL_SUBDIRS = ["boot", "linux", "package"]
+        WALK_USEFUL_SUBDIRS = ["boot", "linux", "package", "toolchain"]
         WALK_EXCLUDES = ["boot/common.mk",
                          "linux/linux-ext-.*.mk",
                          "package/freescale-imx/freescale-imx.mk",
@@ -197,15 +197,23 @@ def get_package_info(vgls):
                          "package/doc-asciidoc.mk",
                          "package/pkg-.*.mk",
                          "package/nvidia-tegra23/nvidia-tegra23.mk"]
+        EXCLUDE_DIRS = ["output"]
         
         def _get_pkg_dict(layer_dir):
-            for root, dirs, files in os.walk(layer_dir):
+            for root, dirs, files in os.walk(layer_dir, followlinks=True):
+                for dir in EXCLUDE_DIRS:
+                    if dir in dirs:
+                        dirs.remove(dir)
                 rootdir = root.replace(layer_dir, "").split("/")
                 if len(rootdir) < 2:
                     continue
                 if rootdir[1] not in WALK_USEFUL_SUBDIRS:
                     continue
                 for f in files:
+                    if f == "Config.in":
+                        pkg = os.path.basename(root)
+                        config_pth = os.path.join(root, f)
+                        pkg_conf_map[pkg] = os.path.relpath(config_pth)
                     if not f.endswith(".mk"):
                         continue
                     # Strip ending ".mk"
@@ -227,8 +235,9 @@ def get_package_info(vgls):
                     pkg_make_map[pkgname] = os.path.relpath(pkgpath)
 
         pkg_make_map = defaultdict()
+        pkg_conf_map = defaultdict()
         pkg_dict = defaultdict()
-        
+     
         _get_pkg_dict(".")
         
         ext_dirs = get_external_dirs(vgls)
@@ -238,6 +247,7 @@ def get_package_info(vgls):
 
         dbg("Found %d packages" % len(pkg_dict.keys()))
         vgls["pkg_make_map"] = pkg_make_map
+        vgls["pkg_conf_map"] = pkg_conf_map
         return pkg_dict
 
     pkg_list = _config_packages(config_dict)
@@ -290,16 +300,10 @@ def get_package_dependencies(vgls, packages):
 
     def _get_runtime_dependencies(pkg):
         pkg = _get_pkg_make_info(pkg).get("rawname", pkg)
+        pkg_conf_map = vgls.get("pkg_conf_map", {})
         runtime_deps = set()
-        if pkg == 'linux':
-            config_path = os.path.join(".", pkg, "Config.in")
-        else:
-            dirs = ["boot", "package", "toolchain"]
-            for dir in dirs:
-                config_path = os.path.join(".", dir, pkg, "Config.in")
-                if os.path.exists(config_path):
-                    break
 
+        config_path = pkg_conf_map.get(pkg, "")
         if os.path.exists(config_path):
             with open(config_path, "r") as config_file:
                 config = config_file.read()
