@@ -6,10 +6,12 @@ from cyclonedx.model import HashType, HashAlgorithm, OrganizationalEntity, Tool,
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom_ref import BomRef
 from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice
+from cyclonedx.model.impact_analysis import ImpactAnalysisState
 from cyclonedx.model.issue import IssueType, IssueClassification, IssueTypeSource
+from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAnalysis, BomTarget, BomTargetVersionRange
 from cyclonedx.output import get_instance, OutputFormat
 
-from amendments import _parse_addl_pkg_csv, _get_excld_packages, _filter_excluded_packages
+from amendments import _parse_addl_pkg_csv, _get_excld_packages, _filter_excluded_packages, _get_user_whitelist
 from manifest import VIGILES_TOOL_NAME, VIGILES_TOOL_VENDOR, VIGILES_TOOL_VERSION, DEFAULT_SUPPLIER
 
 BOM_AUTHOR = "vigiles-buildroot"
@@ -46,7 +48,7 @@ def get_dependency_refs(vgls, deps):
 def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
     lc_factory = LicenseFactory()
     name = pkg_dict.get("name", pkg)
-    version = pkg_dict.get("version")
+    version = pkg_dict.get("cve_version", pkg_dict.get("version"))
     component_type = pkg_dict.get("type", ComponentType.LIBRARY)
     component = Component(
         bom_ref=get_bom_ref(vgls["bom_refs"], name),
@@ -106,6 +108,18 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
             )
             patches.add(patch)
         component.pedigree = Pedigree(patches=patches)
+
+    if pkg_dict.get("ignore-cves"):
+        for cve in pkg_dict["ignore-cves"].split():
+            vuln = create_vulnerability(
+                vgls, cve, status="ignored", pkg=name, version=version)
+            component.add_vulnerability(vuln)
+
+    if pkg_dict.get("patched_cves"):
+        for cve in pkg_dict["patched_cves"].keys():
+            vuln = create_vulnerability(
+                vgls, cve, status="patched", pkg=name, version=version)
+            component.add_vulnerability(vuln)
    
     return component
 
@@ -156,4 +170,26 @@ def create_cyclonedx_sbom(vgls):
     outputter = get_instance(bom=bom, output_format=OutputFormat.JSON)
     bom_json = outputter.output_as_string()
     return json.loads(bom_json)
+
+
+def create_vulnerability(vgls, cve, status, pkg="", version=""):
+    vuln_status_map = {
+        "patched": ImpactAnalysisState.RESOLVED_WITH_PEDIGREE,
+        "ignored": ImpactAnalysisState.NOT_AFFECTED
+    }
+    vuln = Vulnerability(
+            bom_ref=generate_bom_ref(),
+            id=cve,
+            analysis=VulnerabilityAnalysis(
+                state=vuln_status_map[status]
+            ))
+    if pkg:
+        bom_target = BomTarget(
+                ref=get_bom_ref(vgls["bom_refs"], pkg)
+            )
+        if version:
+            bom_target_version= BomTargetVersionRange(version=version)
+            bom_target.versions.add(bom_target_version)
+        vuln.affects.add(bom_target)
+    return vuln
 
