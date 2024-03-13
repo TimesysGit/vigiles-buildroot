@@ -17,11 +17,8 @@ Register (free) and download the API key to access the full feature set based on
 https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File
 
 
-Using Vigiles CVE Check
-=======================
-
-To generate a vulnerability report follow the below steps: 
-
+Installation
+============
 
 1. Clone vigiles-buildroot repository at the same level as Buildroot directory.
 
@@ -32,10 +29,13 @@ To generate a vulnerability report follow the below steps:
 2. Install dependencies
 
     ```sh
-    pip install vigiles-buildroot/requirements.txt
+    python3 -m pip install -r vigiles-buildroot/requirements.txt
     ```
 
-3. Download your LinuxLink Key File here and store it at the (recommended) path.
+Setup
+=====
+
+1. Download your LinuxLink Key File here and store it at the (recommended) path.
 
     ```sh
     mkdir $HOME/timesys
@@ -46,7 +46,7 @@ To generate a vulnerability report follow the below steps:
     >
     > See below for instructions.
 
-4. Instruct Buildroot to include the Vigiles interface in its configuration.
+2. Instruct Buildroot to include the Vigiles interface in its configuration.
     ```sh
     make BR2_EXTERNAL=/path/to/vigiles-buildroot menuconfig
     ```
@@ -59,13 +59,30 @@ To generate a vulnerability report follow the below steps:
 
     > For more information on using external Buildroot interfaces, please see **[This Section of the Buildroot Documentation](https://buildroot.org/downloads/manual/manual.html#outside-br-custom)**
 
-5. Execute Make with the Vigiles target
+Generating SBOM only
+====================
+
+Generating SBOM only option can be found under the Advanced Vigiles option in the menuconfig interface
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        [*]   Generate SBOM only
+```
+This option will only generate the SBOM. By default the generated SBOM is also
+uploaded to vigiles for a vulnerability scan.
+Set an environment variable GENERATE_SBOM_ONLY to True or False to override the current setting in the menuconfig.
+
+Using Vigiles CVE Check
+=======================
+
+To generate a vulnerability report follow the below steps: 
+
+1. Execute Make with the Vigiles target
     ```sh
     make vigiles-check
     ```
 
-
-6. View the Vigiles CVE (Text) Report Locally
+2. View the Vigiles CVE (Text) Report Locally
 
     The CVE report will be located in the ```vigiles/``` subdirectory of your Buildroot build output, with a name based on the Target configuration; e.g.:
     ```sh
@@ -73,7 +90,7 @@ To generate a vulnerability report follow the below steps:
         3616 output/vigiles/buildroot-imx8mpico-report.txt
     ```
 
-7. View the Vigiles CVE Online Report
+3. View the Vigiles CVE Online Report
 
     The local CVE text report will contain a link to a comprehensive and graphical report; e.g.:
     ```
@@ -378,18 +395,6 @@ This option can be found under Advanced Vigiles option
 ```
 This option will include the virtual packages in generated SBOM. By default vigiles-buildroot
 will exclude the virtual packages from generated SBOM.
-
-### Generating SBOM only
-
-This option can be found under the Advanced Vigiles option
-
-```
-                *** Advanced Vigiles / Debug Options ***
-        [ ]   Generate SBOM only
-```
-This option will only generate the SBOM. By default the generated SBOM is also
-uploaded to vigiles for a vulnerability scan.
-Set an environment variable GENERATE_SBOM_ONLY=True to override the setting in menuconfig.
 
 ### Specifying location for Vigiles output
 
