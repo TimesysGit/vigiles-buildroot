@@ -4,7 +4,7 @@
 Timesys Vigiles For Buildroot
 =============================
 
-This is a collection of tools for image manifest generation used for security monitoring and notification as part of the **[Timesys Vigiles](https://www.timesys.com/security/vigiles/)** product offering.
+This is a collection of tools for image SBOM generation used for security monitoring and notification as part of the **[Timesys Vigiles](https://www.timesys.com/security/vigiles/)** product offering.
 
 
 What is Vigiles?
@@ -99,9 +99,9 @@ To generate a vulnerability report follow the below steps:
               https://linuxlink.timesys.com/cves/reports/< Unique Report Identifier>
     ```
 
-    #### The CVE Manifest
-    The Vigiles CVE Scanner creates a manifest that it sends to the LinuxLink
-    Server describing your build configuration. This manifest is located in the
+    #### The CVE SBOM
+    The Vigiles CVE Scanner creates a SBOM that it sends to the LinuxLink
+    Server describing your build configuration. This SBOM is located in the
     ```vigiles/``` subdirectory of your Buildroot output (the same location as
     the text report it receives back).
     ```sh
@@ -179,16 +179,16 @@ alternative path.
 In some cases, it's desirable to modify the CVE report that Vigiles generates.
 vigiles-buildroot supports the ability to _Include Additional Packages_,
 _Exclude Packages_ and _Whitelist Known CVEs_. In addition, the file names of
-the locally-generated Manifest and CVE Report may be customized.
+the locally-generated SBOM and CVE Report may be customized.
 
 All of these options are supported by a ```Kconfig``` option where a user may
 specify a CSV (comma-separated-value) file that describe the packages or CVEs.
 Each is described below.
 
 
-#### Manifest and Report Naming
+#### SBOM and Report Naming
 
-By default, the file names of the Vigiles Manifest to be uploaded and the CVE
+By default, the file names of the Vigiles SBOM to be uploaded and the CVE
 Report that is generated are given names based on the values of
 ```BR2_HOSTNAME``` and ```BR2_DEFCONFIG``` (or the target CPU), which will
 produce files like this:
@@ -200,7 +200,7 @@ output/vigiles
 ```
 
 
-To use a custom name for the local Vigiles Manifest that is uploaded and the
+To use a custom name for the local Vigiles SBOM that is uploaded and the
 CVE Report that is generated, the Kconfig option
 ```BR2_EXTERNAL_VIGILES_MANIFEST_NAME```
 can be used. If set to '**Custom-Name**', the files produced will be:
@@ -286,9 +286,9 @@ $ cat $HOME/projects/buildroot/vigiles-cve-whitelist.csv
 
 ```
 
-### Uploading the Manifest (Only)
+### Uploading the SBOM (Only)
 
-In some cases, it may be desired to upload the Vigiles Manifest for a build
+In some cases, it may be desired to upload the Vigiles SBOM for a build
 without generating a CVE Report. This can speed up build times and ease
 reporting of automated bulk builds.
 
@@ -340,7 +340,7 @@ path will be used (```$(HOME)/timesys/dashboard_config```)
 >Dashboard settings.
 
 
-By default your manifest will be uploaded to your "Private Workspace" Product
+By default your SBOM will be uploaded to your "Private Workspace" Product
 on the Vigiles Dashboard. This can be changed by downloading the "Dashboard
 Config" for an alternative Product and/or Folder.
 
@@ -358,11 +358,11 @@ the config variable above.
                --- Enable Timesys Vigiles CVE Check
                *** Vigiles Kernel CVE Reporting Options ***
                *** Customizing / Amending Vigiles Report ***
-         ()    Custom Manifest and Report Name
+         ()    Custom SBOM and Report Name
          ()    Subfolder name
 ```
 
-If a Dashboard Config is used, a subfolder name can be specified for dynamic folder creation. Manifests will be uploaded to a subfolder with this name within the location specified in the Dashbord Config. If one does not exist, it will be created. This option will be overridden by the environment variable ```VIGILES_SUBFOLDER_NAME```
+If a Dashboard Config is used, a subfolder name can be specified for dynamic folder creation. SBOMs will be uploaded to a subfolder with this name within the location specified in the Dashbord Config. If one does not exist, it will be created. This option will be overridden by the environment variable ```VIGILES_SUBFOLDER_NAME```
 
 
 
