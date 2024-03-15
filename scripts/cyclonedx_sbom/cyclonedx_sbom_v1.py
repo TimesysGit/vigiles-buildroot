@@ -5,9 +5,8 @@ from cyclonedx.factory.license import LicenseFactory
 from cyclonedx.model import HashType, HashAlgorithm, OrganizationalEntity, Tool, OrganizationalContact
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom_ref import BomRef
-from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice
+from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice, Diff
 from cyclonedx.model.impact_analysis import ImpactAnalysisState
-from cyclonedx.model.issue import IssueType, IssueClassification, IssueTypeSource
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAnalysis, BomTarget, BomTargetVersionRange
 from cyclonedx.output import get_instance, OutputFormat
 
@@ -101,10 +100,9 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
         for _patch in pkg_dict.get("patches"):
             patch = Patch(
                 type_=PatchClassification.BACKPORT,
-                resolves=[IssueType(
-                    classification=IssueClassification.SECURITY,
-                    source=IssueTypeSource(name=_patch)
-                )]
+                diff=Diff(
+                    url=_patch
+                )
             )
             patches.add(patch)
         component.pedigree = Pedigree(patches=patches)
