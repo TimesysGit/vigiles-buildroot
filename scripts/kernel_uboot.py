@@ -46,6 +46,8 @@ def _get_version_from_makefile(sdir, with_extra=True):
                     v['revision'] = val
                 elif key == 'EXTRAVERSION':
                     v['extra'] = val
+                elif key == 'PACKAGE_VERSION':
+                    return val
             f_in.close()
     except Exception as e:
         warn("Versions: Could not read/parse Makefile.",

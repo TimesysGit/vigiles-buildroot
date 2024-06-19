@@ -17,6 +17,7 @@ import subprocess
 
 from collections import defaultdict
 
+from kernel_uboot import _get_version_from_makefile
 from manifest import DEFAULT_SUPPLIER
 from utils import py_to_kconfig, kconfig_to_py, kconfig_bool
 from utils import write_intm_json
@@ -83,7 +84,8 @@ br2_internal_pkg_vars = [
     'builddir',
     'is-virtual',
     'rawname',
-    'srcdir'
+    'srcdir',
+    'override-srcdir'
 ]
 
 br2_user_pkg_vars = [
@@ -379,9 +381,23 @@ def _fixup_make_info(vgls):
         cpe_product = pdict.get('cpe-id-product')
         if cpe_product:
             pdict["cve-product"] = cpe_product
-        cpe_version = pdict.get('cpe-id-version')
+        
+        override_srcdir = pdict.get('override-srcdir')
+        cpe_version = pdict.get('cpe-id-version', '')
         if cpe_version:
-            pdict["cve-version"] = cpe_version
+            if cpe_version == 'custom' and override_srcdir:
+                if os.path.exists(override_srcdir):
+                    version = _get_version_from_makefile(override_srcdir)
+                    if version:
+                        pdict['cve-version'] = pdict['version'] = version
+                        pdict['cpe-id-version'] = version
+                    else:
+                        warn("Unable to parse version for package %s" % name)
+                else:
+                    warn("Invalid Source override path given for package %s: %s" % (name, override_srcdir))
+                del pdict['override-srcdir']
+            else:
+                pdict['cve-version'] = cpe_version
 
     for current, needed in rawname_fixups.items():
         pkg_dict[needed] = pkg_dict.pop(current, {})
