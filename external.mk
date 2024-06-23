@@ -109,6 +109,14 @@ ifeq ($(VIGILES_GENERATE_SBOM_ONLY),y)
 vigiles-opts    += -M
 endif
 
+ifeq ($(VIGILES_REQUIRE_ALL_CONFIGS),y)
+vigiles-opts    += -c
+endif
+
+ifeq ($(VIGILES_REQUIRE_ALL_HASFILES),y)
+vigiles-opts    += -i
+endif
+
 
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize

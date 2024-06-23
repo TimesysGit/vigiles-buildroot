@@ -318,5 +318,16 @@ config VIGILES_GENERATE_SBOM_ONLY
     help
       This option will only generate SBOM locally. 
 
-endif
+config VIGILES_REQUIRE_ALL_CONFIGS
+    bool "Require all config files"
+    default n
+    help
+      Throw an error if config.in files are missing.
 
+config VIGILES_REQUIRE_ALL_HASFILES
+    bool "Require all hashfiles"
+    default n
+    help
+      Throw an error if hashfiles are missing.
+
+endif
