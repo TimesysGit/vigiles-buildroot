@@ -104,6 +104,12 @@ def parse_args():
     parser.add_argument('-f', '--sbom-format', dest='sbom_format',
                         help='Format of generated sbom like cyclonedx',
                         default='vigiles')
+    parser.add_argument('-c', '--require-all-configs', dest='require_all_configs',
+                        help='Throw an error on missing Config.in',
+                        action='store_true')
+    parser.add_argument('-i', '--require-all-hashfiles', dest='require_all_hashfiles',
+                        help='Throw an error on missing hashfiles',
+                        action='store_true')
     args = parser.parse_args()
 
     sbom_format = args.sbom_format.strip().lower()
@@ -141,7 +147,9 @@ def parse_args():
         'upload_only': args.upload_only,
         'include_virtual_pkgs': args.include_virtual_pkgs,
         'vigiles_output': args.vigiles_output,
-        'sbom_format': args.sbom_format.strip()
+        'sbom_format': args.sbom_format.strip(),
+        'require_all_configs': args.require_all_configs,
+        'require_all_hashfiles': args.require_all_hashfiles
     }
 
     if not vgls.get('odir', None):
@@ -244,6 +252,14 @@ def __main__():
 
     if vgls['do_check']:
         run_check(vgls)
+
+    if vgls['require_all_configs'] and vgls.get('missing_configs'):
+        err('Config.in files not found for packages: %s' % vgls['missing_configs'])
+        sys.exit(1)
+
+    if vgls['require_all_hashfiles'] and vgls.get('missing_hashfiles'):
+        err('hash files not found for packages: %s' % vgls['missing_configs'])
+        sys.exit(1)
 
 
 __main__()

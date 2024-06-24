@@ -420,6 +420,18 @@ This option can be used to specify the format of SBOM to be generated. At presen
 vigiles-buildroot supports generating SBOMs in `Cyclonedx 1.4 JSON` and `Vigiles JSON` formats. By default, `Vigiles JSON` format SBOM will be generated.
 
 
+### Required Files check
+
+Vigiles-buildroot parses .config and .hash files for package dependencies and checksums. User can set `Require all config files` and `Require all config files`
+options in menuconfig to raise an error if any file is missing. By default, vigiles-buildroot will only show a warning message if any of these files is missing.
+
+
+```             *** Advanced Vigiles / Debug Options ***
+        ...
+        [*]   Require all config files
+        [*]   Require all hashfiles  
+```
+
 ### Other Notes
 
 #### Make 4.3 Workaround

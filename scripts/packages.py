@@ -377,6 +377,7 @@ def get_package_dependencies(vgls, packages):
     
     if missing_configs:
         warn("Config.in not found for packages: %s" % list(missing_configs))
+        vgls['missing_configs'] = missing_configs
 
     vgls['packages'] = pkg_dict
 
@@ -435,4 +436,5 @@ def get_checksum_info(vgls):
 
     if missing_hashfiles:
         warn(".hash files not found for packages: %s" % missing_hashfiles)
+        vgls['missing_hashfiles'] = missing_hashfiles
     return vgls['packages']

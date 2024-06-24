@@ -120,6 +120,14 @@ else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
 vigiles-opts    += -f "cyclonedx_1.4"
 endif
 
+ifeq ($(VIGILES_REQUIRE_ALL_CONFIGS),y)
+vigiles-opts    += -c
+endif
+
+ifeq ($(VIGILES_REQUIRE_ALL_HASHFILES),y)
+vigiles-opts    += -i
+endif
+
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")
