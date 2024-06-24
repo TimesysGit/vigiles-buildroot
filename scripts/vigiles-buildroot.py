@@ -98,6 +98,12 @@ def parse_args():
     parser.add_argument('-v', '--include-virtual', dest='include_virtual_pkgs',
                         help='Include virtual packages in generated SBOM',
                         action='store_true')
+    parser.add_argument('-c', '--require-all-configs', dest='require_all_configs',
+                        help='Throw an error on missing Config.in',
+                        action='store_true')
+    parser.add_argument('-i', '--require-all-hashfiles', dest='require_all_hashfiles',
+                        help='Throw an error on missing hashfiles',
+                        action='store_true')
     args = parser.parse_args()
 
     set_debug(args.debug)
@@ -127,7 +133,9 @@ def parse_args():
         'llkey': args.llkey.strip() if args.llkey else '',
         'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
         'upload_only': args.upload_only,
-        'include_virtual_pkgs': args.include_virtual_pkgs
+        'include_virtual_pkgs': args.include_virtual_pkgs,
+        'require_all_configs': args.require_all_configs,
+        'require_all_hashfiles': args.require_all_hashfiles
     }
 
     if not vgls.get('odir', None):
@@ -143,7 +151,7 @@ def parse_args():
 
 def collect_metadata(vgls):
     vgls["all_pkg_make_info"] = get_all_pkg_make_info(vgls["odir"])
-    
+
     dbg("Getting Config Info ...")
     vgls['config'] = get_config_options(vgls)
     if not vgls['config']:
@@ -212,5 +220,10 @@ def __main__():
     if vgls['do_check']:
         run_check(vgls)
 
+    if vgls['require_all_configs'] and vgls['missing_configs']:
+        sys.exit(1)
+
+    if vgls['require_all_hashfiles'] and vgls['missing_hashfiles']:
+        sys.exit(1)
 
 __main__()
