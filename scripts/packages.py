@@ -384,9 +384,12 @@ def get_package_dependencies(vgls, packages):
 def _get_pkg_hash_map(vgls):
     pkg_hash_map = {}
     dirs = ["package", "boot", "linux"]
-    for dir in dirs:
-        dir_path = os.path.join(vgls["topdir"], dir)
-        for root, dir, files in os.walk(dir_path):
+    ext_dirs = get_external_dirs(vgls)
+    walk_dirs = {os.path.join(walk_dir, dir) for walk_dir in [vgls["topdir"]] + ext_dirs for dir in dirs}
+    for walk_dir in walk_dirs:
+        if not os.path.exists(walk_dir):
+            continue
+        for root, dir, files in os.walk(walk_dir):
             for f in files:
                 if f.endswith(".hash"):
                     pkg = os.path.basename(root)
