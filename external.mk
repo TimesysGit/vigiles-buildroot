@@ -140,6 +140,11 @@ ifeq ($(VIGILES_REQUIRE_ALL_HASHFILES),y)
 vigiles-opts    += -i
 endif
 
+vigiles-ecosystems	:= $(call qstrip,$(VIGILES_ECOSYSTEMS))
+ifneq ($(vigiles-ecosystems),)
+vigiles-opts	+= -e $(vigiles-ecosystems)
+endif
+
 ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
 vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")

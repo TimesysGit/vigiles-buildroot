@@ -113,6 +113,10 @@ def parse_args():
     parser.add_argument('-i', '--require-all-hashfiles', dest='require_all_hashfiles',
                         help='Throw an error on missing hashfiles',
                         action='store_true')
+    parser.add_argument('-e', '--ecosystems', dest='ecosystems', default="",
+                        help='Comma separated string of ecosystems that should \
+                            be used to include ecosystem specific vulnerabilities \
+                            into the vulnerability reports')
     args = parser.parse_args()
 
     sbom_format = args.sbom_format.strip().lower()
@@ -153,7 +157,8 @@ def parse_args():
         'sbom_format': args.sbom_format.strip(),
         'subscribe': args.subscribe.strip(),
         'require_all_configs': args.require_all_configs,
-        'require_all_hashfiles': args.require_all_hashfiles
+        'require_all_hashfiles': args.require_all_hashfiles,
+        'ecosystems': args.ecosystems.strip()
     }
 
     if not vgls.get('odir', None):
@@ -242,7 +247,8 @@ def run_check(vgls):
         'uconfig': uconfig_path,
         'upload_only': vgls.get('upload_only', False),
         'subfolder_name': vgls.get('subfolder_name', ''),
-        'subscribe': vgls.get('subscribe')
+        'subscribe': vgls.get('subscribe'),
+        'ecosystems': vgls.get('ecosystems', '')
     }
     vigiles_request(vgls_chk)
 
