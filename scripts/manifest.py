@@ -30,7 +30,7 @@ VIGILES_MANIFEST_VERSION = '1.22'
 VIGILES_MANIFEST_NAME_MAX_LENGTH = 256
 VIGILES_TOOL_NAME = "vigiles-buildroot"
 VIGILES_TOOL_VENDOR = "Timesys Corporation"
-VIGILES_TOOL_VERSION = "1.15.0"
+VIGILES_TOOL_VERSION = "1.16.0"
 
 
 def _get_machine_name(vgls):
@@ -131,7 +131,7 @@ def write_manifest(vgls):
     if sbom_format.lower() == ALLOWED_SBOM_FORMATS["CDX1.4"]:
         from cyclonedx_sbom import create_cyclonedx_sbom
         final = create_cyclonedx_sbom(vgls)
-        
+
     elif sbom_format.lower() == ALLOWED_SBOM_FORMATS["VIGILES"]:
         final = _init_manifest(vgls)
         amend_manifest(vgls, final)

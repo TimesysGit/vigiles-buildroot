@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.16.0] - 2024-08-08
+
+### Added
+
+* [Feature] Add option to raise error when config.in or hash files are missing
+
+### Changed
+* [packages.py] Include checksums from external sources
+
 ## [v1.15.0] - 2024-06-25
 
 ### Added
