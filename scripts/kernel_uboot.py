@@ -9,11 +9,34 @@
 ###############################################################
 
 import os
+import subprocess
 
 from utils import mkdirhier
 from utils import dbg, info, warn
 
 def _get_version_from_makefile(sdir, with_extra=True):
+    def _get_from_make(makefile_path):
+        makefile_dir = os.path.dirname(makefile_path)
+        for var in ["VERSION", "PACKAGE_VERSION"]:
+            mk_args = [
+                'make',
+                '-sf', makefile_path,
+                '--eval', 'print-%s:; @echo $(%s)' % (var, var)
+            ]
+            
+            try:
+                mk_output = subprocess.check_output(mk_args, cwd=makefile_dir).decode().strip()
+                if mk_output:
+                    return mk_output
+            except Exception as e:
+                warn("Versions: Could not read/parse Makefile.",
+                    [
+                        "Path: %s." % makefile_path,
+                        "Error: %s" % e
+                    ]
+                )
+        return None
+    
     v = {
         'major': None,
         'minor': None,
@@ -64,6 +87,9 @@ def _get_version_from_makefile(sdir, with_extra=True):
         version_string = '.'.join([version_string, v['revision']])
     if v['extra'] and with_extra:
         version_string = version_string + v['extra']
+
+    if not version_string:
+        version_string = _get_from_make(makefile_path)
     return version_string
 
 
