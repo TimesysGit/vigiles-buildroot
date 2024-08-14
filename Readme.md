@@ -17,6 +17,15 @@ Register (free) and download the API key to access the full feature set based on
 https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File
 
 
+Requirements
+============
+- [Buildroot](https://github.com/buildroot/buildroot/) version 2018.11.x and above
+- Python version 3.6 and above
+
+Note: Support for CPE_ID variables was introduced in buildroot from version 2021.02, therefore for versions before that 
+vigiles-buildroot will set the cpe_id variable to "UNKNOWN"
+
+
 Installation
 ============
 
