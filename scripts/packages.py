@@ -197,8 +197,13 @@ def get_package_info(vgls):
                          "package/doc-asciidoc.mk",
                          "package/pkg-.*.mk",
                          "package/nvidia-tegra23/nvidia-tegra23.mk"]
-        EXCLUDE_DIRS = ["output"]
-        
+        EXCLUDE_DIRS = ["build"]
+
+        # exclude current output directory
+        odir_path = vgls.get("odir", "").split("/")
+        if odir_path:
+            EXCLUDE_DIRS.append(odir_path[-1])
+
         def _get_pkg_dict(layer_dir):
             for root, dirs, files in os.walk(layer_dir, followlinks=True):
                 for dir in EXCLUDE_DIRS:
