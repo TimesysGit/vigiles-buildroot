@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.16.1] - 2024-09-03
+
+### Changed
+
+* [Readme.md] Update the requirements for vigiles-buildroot to be setup
+
+### Fixed
+
+* [packages.py] Exclude output dir from makefile searches
+* [kernel_uboot.py] Improve parsing of version from makefile
+
 ## [v1.16.0] - 2024-08-08
 
 ### Added
