@@ -8,6 +8,7 @@ from cyclonedx.model.bom_ref import BomRef
 from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice, Diff
 from cyclonedx.model.impact_analysis import ImpactAnalysisState
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAnalysis, BomTarget, BomTargetVersionRange
+from cyclonedx.model.issue import IssueType, IssueClassification
 from cyclonedx.output import get_instance, OutputFormat
 
 from amendments import _parse_addl_pkg_csv, _get_excld_packages, _filter_excluded_packages, _get_user_whitelist
@@ -97,6 +98,8 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
 
     if pkg_dict.get("patches"):
         patches = set()
+        patched_cves = pkg_dict.get("patched_cves", {})
+
         for _patch in pkg_dict.get("patches"):
             patch = Patch(
                 type_=PatchClassification.BACKPORT,
@@ -104,6 +107,19 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
                     url=_patch
                 )
             )
+            resolves = []
+            for cve_id, patch_list in patched_cves.items():
+                if _patch in patch_list:
+                    issue = IssueType(
+                        classification=IssueClassification.SECURITY,
+                        id_=cve_id,
+                        name=cve_id
+                    )
+                    resolves.append(issue)
+
+            if resolves:
+                patch.resolves = resolves
+
             patches.add(patch)
         component.pedigree = Pedigree(patches=patches)
 
