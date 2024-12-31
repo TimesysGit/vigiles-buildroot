@@ -397,7 +397,8 @@ def _fixup_make_info(vgls):
                     warn("Invalid Source override path given for package %s: %s" % (name, override_srcdir))
                 del pdict['override-srcdir']
             else:
-                pdict['cve-version'] = cpe_version
+                update = pdict.get('cpe-id-update', '')
+                pdict['cve-version'] = f"{cpe_version}{update}"
 
     for current, needed in rawname_fixups.items():
         pkg_dict[needed] = pkg_dict.pop(current, {})
@@ -413,7 +414,8 @@ def _fixup_make_info(vgls):
         if 'cve-product' not in pdict:
             pkg_dict[name]['cve-product'] = name
         if not pdict.get('cve-version', ''):
-            pkg_dict[name]['cve-version'] = pdict['version']
+            update = pdict[name].get('cpe-id-update', '')
+            pkg_dict[name]['cve-version'] = f"{pdict['version']}{update}"
         if pdict.get('pkg-cpe-id', ''):
             pkg_dict[name]['cpe-id'] = pdict['pkg-cpe-id']
             del pkg_dict[name]['pkg-cpe-id']
