@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.16.2] - 2024-02-19
+
+### Fixed
+
+* [cyclonedx_sbom_v1.py]: Fix where Patched CVEs are not marked correctly in
+the generated cyclonedx manifest
+* [buildroot.py] Include CPE_ID_UPDATE to parse the correct cve-version from
+cpe_id
+
 ## [v1.16.1] - 2024-09-03
 
 ### Changed
