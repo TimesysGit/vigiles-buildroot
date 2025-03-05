@@ -336,6 +336,36 @@ config VIGILES_SBOM_FORMAT_CYCLONEDX_1.4
 
 endchoice
 
+config VIGILES_NOTIFICATION_SUBSCRIBE
+    bool "Subscribe SBOM Report Notification"
+    default n
+    help
+      Set this option to receive notifications for SBOM reports.
+
+if VIGILES_NOTIFICATION_SUBSCRIBE
+
+choice
+    prompt "Set SBOM Report Notification Frequency"
+    default VIGILES_NOTIFICATION_SUBSCRIBE_NONE
+    help
+      Select how often you want to receive SBOM report notifications.
+
+config VIGILES_NOTIFICATION_SUBSCRIBE_NONE
+    bool "None"
+
+config VIGILES_NOTIFICATION_SUBSCRIBE_DAILY
+    bool "Daily"
+
+config VIGILES_NOTIFICATION_SUBSCRIBE_WEEKLY
+    bool "Weekly"
+
+config VIGILES_NOTIFICATION_SUBSCRIBE_MONTHLY
+    bool "Monthly"
+
+endchoice
+
+endif
+
 config VIGILES_GENERATE_SBOM_ONLY
     bool "Generate SBOM only"
     default n

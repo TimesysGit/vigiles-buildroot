@@ -120,6 +120,18 @@ else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
 vigiles-opts    += -f "cyclonedx_1.4"
 endif
 
+ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE),y)
+    ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE_NONE),y)
+        vigiles-opts    += -s "none"
+    else ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE_DAILY),y)
+        vigiles-opts    += -s "daily"
+    else ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE_WEEKLY),y)
+        vigiles-opts    += -s "weekly"
+    else ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE_MONTHLY),y)
+        vigiles-opts    += -s "monthly"
+    endif
+endif
+
 ifeq ($(VIGILES_REQUIRE_ALL_CONFIGS),y)
 vigiles-opts    += -c
 endif

@@ -89,6 +89,9 @@ def handle_cmdline_args():
     parser.add_argument('-F', '--subfolder-name',
                              help='Name of subfolder to upload to',
                              dest='subfolder_name')
+    parser.add_argument('-s', '--subscribe', dest='subscribe',
+                        help='Set subscription frequency for sbom report notifications: "none", "daily", "weekly", "monthly"',
+                        default="")
     return parser.parse_args()
 
 
@@ -455,7 +458,6 @@ def vigiles_request(vgls_chk):
 
     request = {
         'manifest': manifest_data,
-        'subscribe': False,
         'group_token' if is_enterprise else 'product_token': vgls_creds.get('product_or_group', ''),
         'folder_token': vgls_creds.get('folder', ''),
         'subfolder_name': subfolder_name,
@@ -468,8 +470,21 @@ def vigiles_request(vgls_chk):
     if uboot_config:
         request['uboot_config'] = uboot_config
 
-    print('Vigiles: Requesting image analysis from LinuxLink ...\n',
-          file=sys.stderr)
+    subscribe = vgls_chk.get('subscribe')
+    valid_subscribe = ["none", "daily", "weekly", "monthly"]
+    if subscribe:
+        subscribe = subscribe.lower()
+        if is_enterprise:
+            if subscribe in valid_subscribe:
+                request["subscribe"] = subscribe
+            else:
+                print('Vigiles ERROR: Invalid subscription frequency. Choose from: none, daily, weekly, monthly')
+                sys.exit(1)
+        else:
+            print('Vigiles WARNING: The subscribe option is currently only supported with the Enterprise edition')
+
+    print("Vigiles: Requesting image analysis from {} ...\n".format(
+    "Enterprise Vigiles" if is_enterprise else "Linuxlink"), file=sys.stderr)
 
     result = llapi.api_post(email, key, resource, request)
     if not result:
@@ -510,5 +525,6 @@ if __name__ == '__main__':
         'kconfig': args.kconfig,
         'uconfig': args.uboot_config,
         'subfolder_name': args.subfolder_name,
+        'subscribe': args.subscribe.strip()
     }
     vigiles_request(vgls_chk)

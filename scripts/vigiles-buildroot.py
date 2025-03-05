@@ -104,6 +104,9 @@ def parse_args():
     parser.add_argument('-f', '--sbom-format', dest='sbom_format',
                         help='Format of generated sbom like cyclonedx',
                         default='vigiles')
+    parser.add_argument('-s', '--subscribe', dest='subscribe',
+                        help='Set subscription frequency for sbom report notifications: "none", "daily", "weekly", "monthly"',
+                        default="")
     parser.add_argument('-c', '--require-all-configs', dest='require_all_configs',
                         help='Throw an error on missing Config.in',
                         action='store_true')
@@ -148,6 +151,7 @@ def parse_args():
         'include_virtual_pkgs': args.include_virtual_pkgs,
         'vigiles_output': args.vigiles_output,
         'sbom_format': args.sbom_format.strip(),
+        'subscribe': args.subscribe.strip(),
         'require_all_configs': args.require_all_configs,
         'require_all_hashfiles': args.require_all_hashfiles
     }
@@ -238,6 +242,7 @@ def run_check(vgls):
         'uconfig': uconfig_path,
         'upload_only': vgls.get('upload_only', False),
         'subfolder_name': vgls.get('subfolder_name', ''),
+        'subscribe': vgls.get('subscribe')
     }
     vigiles_request(vgls_chk)
 

@@ -428,6 +428,17 @@ This option can be found under Advanced Vigiles option
 This option can be used to specify the format of SBOM to be generated. At present
 vigiles-buildroot supports generating SBOMs in `Cyclonedx 1.4 JSON` and `Vigiles JSON` formats. By default, `Vigiles JSON` format SBOM will be generated.
 
+### Subscribe SBOM Report Notification (Enterprise Vigiles Only)
+
+This option can be found under Advanced Vigiles option
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        [ ]   Subscribe SBOM Report Notification
+```
+
+This option allows you to configure the SBOM report notification frequency. You can select from the following options `None`, `Daily`,`Weekly` and `Monthly`
+This feature is currently available for Enterprise vigiles only.
 
 ### Required Files check
 
