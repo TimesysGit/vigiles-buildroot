@@ -20,9 +20,7 @@ menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
         |-- linux-4.14.98.config
         |-- uboot-2018.03.config
 
-      In order to receive a full online and text report, a (free) Timesys
-      Linuxlink account must be obtained and the associated key configured
-      below for the service.
+      To request a trial account, please contact us at sales@timesys.com
 
       More information can be found here:
 
@@ -230,9 +228,8 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
       File.
 
       The Key File is needed to enable full reporting of the applicable CVEs
-      on the Target. One can be obtained by registering for a free (or
-      fee-based premium) Timesys LinuxLink account:
-        https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File
+      on the Target. To request a trial account and receive a Vigiles Key file, 
+      please contact us at sales@timesys.com
 
       Once registered, the Key File can be downloaded and this option should
       indicate its location.
