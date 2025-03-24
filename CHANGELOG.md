@@ -1,6 +1,21 @@
 # Changelog
 
-## [v1.16.2] - 2024-02-19
+## [v1.17.0] - 2025-03-24
+
+### Added
+* Feature: Added support to subscribe frequency for notification during manifest upload
+* Feature: Added option to specify ecosystems for generating vulnerability report
+
+### Changed
+
+* docs: remove references to free account registration
+
+### Fixed
+
+* [checkcves.py] Handle KeyErrors when data is unavailable from upload API response
+* [amendments.py] Dont allow empty rows to be parsed from additional packages CSV file
+
+## [v1.16.2] - 2025-02-19
 
 ### Fixed
 
