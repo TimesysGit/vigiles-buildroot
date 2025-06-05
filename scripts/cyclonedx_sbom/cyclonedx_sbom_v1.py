@@ -5,7 +5,7 @@ from cyclonedx.factory.license import LicenseFactory
 from cyclonedx.model import HashType, HashAlgorithm, OrganizationalEntity, Tool, OrganizationalContact
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.bom_ref import BomRef
-from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice, Diff
+from cyclonedx.model.component import Component, ComponentType, Patch, Pedigree, PatchClassification, LicenseChoice, Diff, Property
 from cyclonedx.model.impact_analysis import ImpactAnalysisState
 from cyclonedx.model.vulnerability import Vulnerability, VulnerabilityAnalysis, BomTarget, BomTargetVersionRange
 from cyclonedx.model.issue import IssueType, IssueClassification
@@ -134,6 +134,11 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
             vuln = create_vulnerability(
                 vgls, cve, status="patched", pkg=name, version=version)
             component.add_vulnerability(vuln)
+
+    if pkg_dict.get("comment"):
+        component.properties = [
+            Property(name="comment", value=pkg_dict["comment"])
+        ]
    
     return component
 
