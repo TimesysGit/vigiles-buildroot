@@ -1,10 +1,10 @@
-menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
-    bool "Enable Timesys Vigiles CVE Check"
+menuconfig BR2_EXTERNAL_VIGILES
+    bool "Enable Vigiles CVE Check"
     default y
     help
       This option enables an additional Post-Image step that gathers metadata
       about the installed packages (name, version, applied patches, etc). and
-      submits a SBOM to the Timesys LinuxLink Vigiles service in exchange
+      submits a SBOM to the Vigiles service in exchange
       for a report that lists the CVEs known to affect the configuration.
 
       The process will also collect and submit the .config files for the
@@ -20,14 +20,20 @@ menuconfig BR2_EXTERNAL_TIMESYS_VIGILES
         |-- linux-4.14.98.config
         |-- uboot-2018.03.config
 
+      [DEPRECATION WARNING]
+      The legacy option BR2_EXTERNAL_TIMESYS_VIGILES will be deprecated in a
+      future release. Please update your configurations to use
+      BR2_EXTERNAL_VIGILES for enabling Vigiles support to ensure continued
+      compatibility.
+
       To request a trial account, please contact us at sales@timesys.com
 
       More information can be found here:
 
-        https://www.timesys.com/security/vigiles/
+        https://www.lynx.com/solutions/vulnerability-mitigation-management
 
 
-if BR2_EXTERNAL_TIMESYS_VIGILES
+if BR2_EXTERNAL_VIGILES
 
 comment "Vigiles Kernel CVE Reporting Options"
 
@@ -37,7 +43,7 @@ config VIGILES_ENABLE_KERNEL_CONFIG
     default y
     help
       If selected, this option will enable Linux Kernel .config filtering
-      of reported CVEs by the Timesys LinuxLink Vigiles service.
+      of reported CVEs by the Vigiles service.
 
       This option is enabled by default and greatly reduces False-Positive
       matches of CVEs that are applicable to the kernel that will run on the
@@ -80,7 +86,7 @@ config VIGILES_ENABLE_UBOOT_CONFIG
     default y
     help
       If selected, this option will enable U-Boot configuration filtering of
-      reported CVEs by the Timesys LinuxLink Vigiles service.
+      reported CVEs by the Vigiles service.
 
       This option is enabled by default and reduces False-Positive matches of
       CVEs that are applicable to the bootloader that will run on the Target.
@@ -112,7 +118,7 @@ config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
       filtering is composed of _both_ the U-Boot .config file (as generated
       from the Kconfig process) AND include/autoconf.mk (which is generated
       automatically by a post-configuration step). If you specify a custom
-      file path, it is assumed that it contains all Kconfig options (i.e. the
+      file path, it is assumed that it contains all Kconfig options i.e. the
       contents of both files in your external tree.
 
       If unset, U-Boot .config filtering will be disabled.
@@ -214,13 +220,13 @@ config BR2_EXTERNAL_VIGILES_UPLOAD_ONLY
       If unsure, choose N.
 
 
-comment "Timesys LinuxLink Account Options"
+comment "Vigiles Account Options"
 
 config BR2_EXTERNAL_VIGILES_KEY_FILE
-    string "Timesys LinuxLink Key Location"
+    string "Vigiles API Key Location"
     default "$(HOME)/timesys/linuxlink_key"
     help
-      This option specifies the location of your default Timesys LinuxLink Key
+      This option specifies the location of your default Vigiles API Key
       File, if it is different than $(HOME)/timesys/linuxlink_key.
 
       This option can be overridden on the command line by setting the
@@ -239,7 +245,7 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
       vulnerability.
 
 
-comment "Timesys Vigiles Dashboard Options"
+comment "Vigiles Dashboard Options"
     depends on !VIGILES_GENERATE_SBOM_ONLY
 
 config VIGILES_ENABLE_DASHBOARD_CONFIG
@@ -248,11 +254,11 @@ config VIGILES_ENABLE_DASHBOARD_CONFIG
     depends on !VIGILES_GENERATE_SBOM_ONLY
 
 config BR2_EXTERNAL_VIGILES_DASHBOARD_CONFIG
-    string "Timesys Vigiles Dashboard Config Location"
+    string "Vigiles Dashboard Config Location"
     depends on VIGILES_ENABLE_DASHBOARD_CONFIG
     default "$(HOME)/timesys/dashboard_config"
     help
-      This option specifies the location of your default Timesys Dashboard
+      This option specifies the location of your default Vigiles Dashboard
       Config File, if it is different than $(HOME)/timesys/dashboard_config.
 
       This option can be overridden on the command line by setting the

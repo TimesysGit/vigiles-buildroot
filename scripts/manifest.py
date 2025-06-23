@@ -1,9 +1,9 @@
 ##########################################################################
 #
-# manifest.py - Helpers for building a Vigiles (Buildroot) image manifest
+# manifest.py - Helpers for building a Vigiles (Buildroot) SBOM
 #
 # Copyright (C) 2018 - 2020 Timesys Corporation
-#
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is released under the MIT License.
 ##########################################################################
@@ -29,7 +29,7 @@ VIGILES_DEFAULT_REPORT = 'buildroot-rootfs-report.txt'
 VIGILES_MANIFEST_VERSION = '1.22'
 VIGILES_MANIFEST_NAME_MAX_LENGTH = 256
 VIGILES_TOOL_NAME = "vigiles-buildroot"
-VIGILES_TOOL_VENDOR = "Timesys Corporation"
+VIGILES_TOOL_VENDOR = "Lynx Software Technologies Inc"
 VIGILES_TOOL_VERSION = "1.17.0"
 
 

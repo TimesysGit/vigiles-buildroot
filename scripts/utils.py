@@ -3,7 +3,7 @@
 # utils.py - Miscellaneous Helpers
 #
 # Copyright (C) 2018 - 2020 Timesys Corporation
-#
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is released under the MIT License.
 ###############################################################

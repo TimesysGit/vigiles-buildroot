@@ -1,9 +1,9 @@
 ###########################################################
 #
-# scripts/llapi.py - Timesys LinuxLink Communication
+# scripts/llapi.py - Vigiles API Interface
 #
 # Copyright (C) 2018 - 2020 Timesys Corporation
-#
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is released under the MIT License.
 #
@@ -21,9 +21,9 @@ import urllib.parse
 import urllib.error
 from collections import OrderedDict
 
-VigilesURL = os.getenv('LINUXLINK_SERVER', 'https://linuxlink.timesys.com')
-VigilesSupportURL = 'https://linuxlink.timesys.com/support'
-VigilesInfoURL = 'https://www.timesys.com/security/vulnerability-patch-notification/'
+VigilesURL = os.getenv('LINUXLINK_SERVER', 'https://vigiles.lynx.com')
+VigilesSupportURL = 'https://vigiles.lynx.com/support'
+VigilesInfoURL = 'https://www.lynx.com/solutions/vulnerability-mitigation-management'
 
 
 def make_msg(method, resource, data):
@@ -84,16 +84,16 @@ def api_error_message(reason: str, param: str = '', extra: str = ''):
     from datetime import datetime
 
     err_dict = {
-        '400': 'The LinuxLink request was empty or insufficient.',
-        '403': 'Invalid credentials were sent to the LinuxLink Server.',
-        '404': 'The specified LinuxLink URL does not exist.',
-        '405': 'An incorrect LinuxLink URL was used.',
+        '400': 'The Vigiles request was empty or insufficient.',
+        '403': 'Invalid credentials were sent to the Vigiles Server.',
+        '404': 'The specified Vigiles URL does not exist.',
+        '405': 'An incorrect VIgiles URL was used.',
         '500': 'The Vigiles Service could not handle the request.',
         '503': 'The Vigiles Service is currently unavailable.',
         '504': 'The Vigiles Service is having an issue with the request/manifest.',
         'not-known': 'The Vigiles Service cannot be reached.',
         'timeout': 'Attempting to contact the server timed out.',
-        'content': 'The LinuxLink response was empty or malformed.'
+        'content': 'The Vigiles response was empty or malformed.'
     }
 
     msg = [
@@ -108,12 +108,12 @@ def api_error_message(reason: str, param: str = '', extra: str = ''):
         '',
         '',
         '',
-        'Information about LinuxLink and the Vigiles CheckCVEs Service can be found at:',
+        'Information about Vigiles and the Vigiles CheckCVEs Service can be found at:',
         '',
         '\t%s' % VigilesInfoURL,
         '',
         '',
-        'If the issue persists, please contact LinuxLink support at:',
+        'If the issue persists, please contact Vigiles support at:',
         '',
         '\t%s' % VigilesSupportURL,
         '',

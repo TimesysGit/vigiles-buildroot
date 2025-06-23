@@ -145,7 +145,7 @@ ifneq ($(vigiles-ecosystems),)
 vigiles-opts	+= -e $(vigiles-ecosystems)
 endif
 
-ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
+ifneq ($(filter y,$(BR2_EXTERNAL_VIGILES) $(BR2_EXTERNAL_TIMESYS_VIGILES)),)
 vigiles-check: target-finalize
 	@$(call MESSAGE,"Running Vigiles CVE Check")
 	(	\
@@ -161,9 +161,12 @@ vigiles-image: target-finalize
 		--metadata-only 	\
 	)
 
-else 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
+else 	#	ifeq ($(BR2_EXTERNAL_VIGILES),y)
 vigiles-check vigiles-image:
 	@$(call MESSAGE,"Vigiles Support is not Enabled.")
 
-endif 	#	ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
+endif 	#	ifeq ($(BR2_EXTERNAL_VIGILES),y)
 
+ifeq ($(BR2_EXTERNAL_TIMESYS_VIGILES),y)
+$(info Vigiles WARNING: BR2_EXTERNAL_TIMESYS_VIGILES will be deprecated soon. Please update your configurations to use `BR2_EXTERNAL_VIGILES`.)
+endif

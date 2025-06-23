@@ -3,7 +3,7 @@
 # packages.py - Helpers for parsing Buildroot package metadata
 #
 # Copyright (C) 2018 - 2020 Timesys Corporation
-#
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is loosely based on the Buildroot 'pkg-stats'
 #  script (ca. April 2020), which is licensed under the GPLv2

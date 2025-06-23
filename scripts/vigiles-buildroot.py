@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 ###########################################################################
-# vigiles-buildoot.py -- Timesys Vigiles Interface for Buildroot2
+# vigiles-buildoot.py -- Vigiles Interface for Buildroot2
 #
 # Copyright (C) 2020 Timesys
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is released under the MIT License.
 #
@@ -79,9 +80,9 @@ def parse_args():
                         help='File of CVEs to Ignore/Whitelist')
 
     parser.add_argument('-K', '--keyfile', dest='llkey',
-                        help='Location of LinuxLink credentials file')
+                        help='Location of Vigiles API key file')
     parser.add_argument('-C', '--dashboard-config', dest='lldashboard',
-                        help='Location of LinuxLink Dashboard Config file')
+                        help='Location of Vigiles Dashboard Config file')
 
     parser.add_argument('-U', '--upload-only', dest='upload_only',
                         help='Upload the manifest only; do not wait for report.',

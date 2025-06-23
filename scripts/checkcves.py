@@ -5,7 +5,7 @@
 # scripts/checkcves.py - Online CVE Database Interface.
 #
 # Copyright (C) 2018 - 2020 Timesys Corporation
-#
+# Copyright (C) 2025 Lynx Software Technologies, Inc. All rights reserved.
 #
 # This source is released under the MIT License.
 #
@@ -20,9 +20,9 @@ import urllib.parse
 import llapi
 
 NVD_BASE_URL = 'https://nvd.nist.gov/vuln/detail/'
-API_DOC = 'https://linuxlink.timesys.com/docs/wiki/engineering/LinuxLink_Key_File'
-INFO_PAGE_DOMAIN = 'https://www.timesys.com'
-INFO_PAGE_PATH = '/security/vulnerability-patch-notification/'
+API_DOC = 'https://vigiles.lynx.com/docs/vigiles_api_key_file.html'
+INFO_PAGE_DOMAIN = 'https://www.lynx.com'
+INFO_PAGE_PATH = '/solutions/vulnerability-mitigation-management'
 INFO_PAGE = INFO_PAGE_DOMAIN + INFO_PAGE_PATH
 
 
@@ -46,10 +46,10 @@ class InvalidLinuxlinkKey(BaseException):
 
 
 def get_usage():
-    return('This script sends a json manifest file for an image to LinuxLink '
+    return('This script sends a json manifest file for an image to Vigiles '
            'to check the CVE status of the recipes. The manifest must be '
            'specified. \n\n'
-           'A full report a LinuxLink API keyfile, and an active LinuxLink '
+           'A full report requires a Vigiles API keyfile and an active Vigiles '
            'subscription.\n\n'
            'See this document for keyfile information:\n'
            '%s\n\n'
@@ -71,7 +71,7 @@ def print_demo_notice(bad_key=False):
           'temporarily available online results only.\n'
           '\tTo request a trial account, please contact us at sales@timesys.com\n',
           file=sys.stderr)
-    print('\tFor more information on the security notification service, '
+    print('\tFor more information on the vulnerability management service, '
           'please visit:\n'
           '\t%s\n' % INFO_PAGE,
           file=sys.stderr)
@@ -321,7 +321,7 @@ def check_dashboard_config(dashboard_config, default_dc_used):
 
 
 def check_linuxlink_key(key, default_key_used):
-    err_prefix = "Invalid Linuxlink key."
+    err_prefix = "Invalid API key."
     err_suffix = " Report will be generated in Demo mode instead."
     
     try:
@@ -339,11 +339,11 @@ def check_linuxlink_key(key, default_key_used):
     except FileNotFoundError:
         if default_key_used:
             return
-        err_msg = "Linuxlink key doesn't exists at %s." % key + err_suffix
+        err_msg = "API key doesn't exists at %s." % key + err_suffix
     except json.decoder.JSONDecodeError:
         err_msg = err_prefix + err_suffix
     except Exception as e:
-        err_msg = "Unable to parse Linuxlink: %s." % e + err_suffix
+        err_msg = "Unable to parse API key: %s." % e + err_suffix
     raise InvalidLinuxlinkKey(err_msg)
 
 
@@ -367,13 +367,13 @@ def _get_credentials(vgls_chk):
     default_dc_used = False
 
     if kf_env:
-        print("Vigiles: Using LinuxLink Key from Environment: %s" % kf_env)
+        print("Vigiles: Using API Key from Environment: %s" % kf_env)
         key_file = kf_env
     elif kf_param:
-        print("Vigiles: Using LinuxLink Key from Configuration: %s" % kf_param)
+        print("Vigiles: Using API Key from Configuration: %s" % kf_param)
         key_file = kf_param
     else:
-        print("Vigiles: Trying LinuxLink Key Default: %s" % kf_default)
+        print("Vigiles: Trying API Key Default: %s" % kf_default)
         key_file = kf_default
         default_key_used = True
 
@@ -552,8 +552,7 @@ def vigiles_request(vgls_chk):
         else:
             print('Vigiles WARNING: Ecosystems based scanning is available only for enterprise edition')
 
-    print("Vigiles: Requesting image analysis from {} ...\n".format(
-    "Enterprise Vigiles" if is_enterprise else "Linuxlink"), file=sys.stderr)
+    print("Vigiles: Requesting image analysis ...\n", file=sys.stderr)
 
     result = llapi.api_post(email, key, resource, request)
     if not result:
