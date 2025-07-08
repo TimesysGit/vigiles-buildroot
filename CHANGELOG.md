@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.18.0] - 2025-07-08
+
+### Changed
+
+* Updated timesys and linuxLink references
+
 ## [v1.17.0] - 2025-03-24
 
 ### Added
