@@ -240,10 +240,6 @@ config BR2_EXTERNAL_VIGILES_KEY_FILE
       Once registered, the Key File can be downloaded and this option should
       indicate its location.
 
-      If the Key File does not exist, the Vigiles CVE check will still function
-      in Demo Mode and the results will only show a high-level summary of CVE
-      vulnerability.
-
 
 comment "Vigiles Dashboard Options"
     depends on !VIGILES_GENERATE_SBOM_ONLY
