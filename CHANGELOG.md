@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.19.0] - 2025-07-22
+
+### Changed
+
+* [checkcves.py] Removed demo mode
+
+### Fixed
+
+* [packages.py] fix python regex warning
+* [cyclonedx_sbom_v1.py] Add dependency type as property in cyclonedx SBOM
+
 ## [v1.18.0] - 2025-07-08
 
 ### Changed
