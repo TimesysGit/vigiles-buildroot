@@ -128,6 +128,7 @@ def write_intm_json(vgls, name, d):
                  ]
             )
 
+
 def get_external_dirs(vgls):
     from buildroot import _get_make_output
     
@@ -143,3 +144,11 @@ def get_external_dirs(vgls):
                 paths.append(pth)
             break
     return paths
+
+
+def get_valid_los(level_of_support):
+    valid = ["not available", "actively maintained", "no longer maintained", "abandoned"]
+
+    if level_of_support.lower() in valid:
+        return level_of_support.capitalize()
+    return None

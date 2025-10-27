@@ -558,6 +558,33 @@ BUSYBOX_CPE_ID_VENDOR = busybox
 The vigiles-buildroot uses these variables to generate a cpe id if it is not already specified
 
 
+### Package Lifecycle Information
+
+Some users may want to set package lifecycle information in the package makefile and have it included in the SBOM. This can be done using the following custom makefile variables in the package’s .mk file:
+
+```
+FOO_RELEASE_DATE   = "2025-01-15"
+FOO_END_OF_LIFE    = "2027-01-15"
+FOO_LEVEL_OF_SUPPORT = "Actively maintained"
+```
+
+For host packages, prefix the package name with HOST_ when defining the variables, for example:
+```
+HOST_FOO_LEVEL_OF_SUPPORT = "Actively maintained"
+```
+
+**Note:** `FOO` is a placeholder, replace it with the actual package name.  
+These values will be collected and included in the SBOM for the corresponding packages.
+
+You can also provide lifecycle information for additional packages using a CSV file referenced in ```Including Additional Packages```. Example CSV format:
+```
+product,version,license,release_date,end_of_life,level_of_support
+avahi,0.6,MIT,2025-09-01,2026-01-01,Actively maintained
+```
+
+The valid values for both ```FOO_LEVEL_OF_SUPPORT``` and the CSV column level_of_support are: ```Actively maintained```, ```No longer maintained```, ```Not available```, ```Abandoned```.
+
+
 Maintenance
 ===========
 

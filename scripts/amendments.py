@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from utils import mkdirhier
 from utils import dbg, info, warn
+from utils import get_valid_los
 
 
 def _parse_addl_pkg_csv(extra_csv):
@@ -36,12 +37,23 @@ def _parse_addl_pkg_csv(extra_csv):
                     license = row[2].strip()
                 else:
                     license = 'unknown'
-                extra_rows.append([pkg,ver,license])
+                release_date = row[3].strip() if len(row) > 3 else ''
+                end_of_life = row[4].strip() if len(row) > 4 else ''
+                level_of_support = row[5].strip() if len(row) > 5 else ''
+                if level_of_support and pkg != "product":
+                    los_value = get_valid_los(level_of_support)
+                    if los_value:
+                        level_of_support = los_value
+                    else:
+                        warn("Invalid level_of_support '%s' for additional package '%s'. Refer to the README for valid values."% (level_of_support, pkg))
+                        level_of_support = ''
+
+                extra_rows.append([pkg, ver, license, release_date, end_of_life, level_of_support])
     except Exception as e:
         warn("Additional Packages: %s" % e)
         return []
     
-    # Check for a CSV header of e.g. "product,version,license" and skip it
+    # Skip CSV header if present
     header = extra_rows[0]
     if header[0].lower() == "product":
         extra_rows = extra_rows[1:]
@@ -55,7 +67,8 @@ def _get_addl_packages(extra_csv):
 
     additional = {
         'additional_licenses': defaultdict(str),
-        'additional_packages': defaultdict(dict)
+        'additional_packages': defaultdict(dict),
+        'additional_packages_info': defaultdict(dict)
     }
 
     extra_rows = _parse_addl_pkg_csv(extra_csv)
@@ -66,6 +79,10 @@ def _get_addl_packages(extra_csv):
         pkg = row[0].replace(' ', '-')
         ver = row[1].replace(' ', '.')
         license = row[2]
+        release_date = row[3]
+        end_of_life = row[4]
+        level_of_support = row[5]
+
         license_key = pkg + ver
 
         dbg("Extra Package: %s, Version: %s, License: %s = %s" %
@@ -76,6 +93,22 @@ def _get_addl_packages(extra_csv):
 
         additional['additional_packages'][pkg] = sorted(list(pkg_vers))
         additional['additional_licenses'][license_key] = license
+
+        # Update lifecycle info dictionary if any value exists
+        lifecycle = {}
+        if release_date:
+            lifecycle['release_date'] = release_date
+        if end_of_life:
+            lifecycle['end_of_life'] = end_of_life
+        if level_of_support:
+            lifecycle['level_of_support'] = level_of_support
+
+        if lifecycle:
+            key = pkg + ver if ver else pkg
+            additional['additional_packages_info'][key] = lifecycle
+
+    if not additional['additional_packages_info']:
+        additional.pop('additional_packages_info',None)
 
     dbg("Adding Package Info: %s" %
          json.dumps(additional, indent=4, sort_keys=True))

@@ -135,10 +135,21 @@ def create_component(vgls, pkg, pkg_dict, additional_pkg=False):
                 vgls, cve, status="patched", pkg=name, version=version)
             component.add_vulnerability(vuln)
 
+    properties = []
     if pkg_dict.get("comment"):
-        component.properties = [
-            Property(name="comment", value=pkg_dict["comment"])
-        ]
+        properties.append(Property(name="comment", value=pkg_dict["comment"]))
+
+    if pkg_dict.get("release-date"):
+        properties.append(Property(name="release_date", value=pkg_dict["release-date"]))
+
+    if pkg_dict.get("end-of-life"):
+        properties.append(Property(name="end_of_life", value=pkg_dict["end-of-life"]))
+
+    if pkg_dict.get("level-of-support"):
+        properties.append(Property(name="level_of_support", value=pkg_dict["level-of-support"]))
+
+    component.properties = properties if properties else None
+
    
     return component
 
@@ -178,10 +189,13 @@ def create_cyclonedx_sbom(vgls):
 
     # include additional packages
     addl_pkg_list = _parse_addl_pkg_csv(vgls["addl"])
-    for pkg, version, license in addl_pkg_list:
+    for pkg, version, license, release, eol, los in addl_pkg_list:
         component = create_component(vgls, pkg, {
             "version": version,
-            "license": license
+            "license": license,
+            "release-date": release,
+            "end-of-life": eol,
+            "level-of-support":los
         }, additional_pkg=True)
         bom.components.add(component)
 

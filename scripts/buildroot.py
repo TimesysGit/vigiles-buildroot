@@ -20,7 +20,7 @@ from collections import defaultdict
 from kernel_uboot import _get_version_from_makefile
 from manifest import DEFAULT_SUPPLIER
 from utils import py_to_kconfig, kconfig_to_py, kconfig_bool
-from utils import write_intm_json
+from utils import write_intm_json, get_valid_los
 from utils import dbg, info, warn, err
 
 
@@ -97,6 +97,9 @@ br2_user_pkg_vars = [
     'site',
     'source',
     'spdx-org',
+    'release-date',
+    'end-of-life',
+    'level-of-support'
 ]
 
 br2_cpe_id_components = [
@@ -313,7 +316,7 @@ def _transform_make_info(vgls, variable_list):
                 pkgname = key[:-len(pkgvar)]
                 if pkgname not in pkg_dict:
                     continue
-                if pkgkey not in ['license', 'ignore-cves', 'spdx-org']:
+                if pkgkey not in ['license', 'ignore-cves', 'spdx-org', 'level-of-support']:
                     value = value.split(' ')[0]
 
                 if key.endswith('-site'):
@@ -426,6 +429,16 @@ def _fixup_make_info(vgls):
         else:
             # Generate CPE ID using br2_cpe_id_components
             pkg_dict[name]['cpe-id'] = _generate_cpe_id(pdict)
+
+        # Validate the level_of_support value
+        if pkg_dict[name]['level-of-support']:
+            level_of_support = pkg_dict[name]['level-of-support']
+            los_value = get_valid_los(level_of_support)
+            if los_value:
+                pkg_dict[name]['level-of-support'] = los_value
+            else:
+                del pkg_dict[name]['level-of-support']
+                warn("Invalid level_of_support '%s' for package '%s'. Refer to the README for valid values."% (level_of_support, name))
 
         # Remove br2_cpe_id_components from pkg_dict once cpe id is generated
         for item in br2_cpe_id_components:
