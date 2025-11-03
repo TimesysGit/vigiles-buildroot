@@ -140,7 +140,7 @@ ifeq ($(VIGILES_REQUIRE_ALL_HASHFILES),y)
 vigiles-opts    += -i
 endif
 
-vigiles-ecosystems	:= $(call qstrip,$(VIGILES_ECOSYSTEMS))
+vigiles-ecosystems	:= $(call strip,$(VIGILES_ECOSYSTEMS))
 ifneq ($(vigiles-ecosystems),)
 vigiles-opts	+= -e $(vigiles-ecosystems)
 endif
