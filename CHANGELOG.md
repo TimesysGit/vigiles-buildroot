@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.21.0] - 2025-11-25
+
+### Fixed
+
+* [external.mk] fix error in menuconfig when ecosystem values include spaces after commas
+
 ## [v1.20.0] - 2025-11-03
 
 ### Added
