@@ -514,7 +514,10 @@ def vigiles_request(vgls_chk):
         else:
             print('Vigiles WARNING: Ecosystems based scanning is available only for enterprise edition')
 
-    print("Vigiles: Requesting image analysis ...\n", file=sys.stderr)
+    if upload_only:
+        print("Vigiles: Uploading SBOM to %s" % llapi.VigilesURL)
+    else:
+        print("Vigiles: Requesting image analysis ...\n", file=sys.stderr)
 
     result = llapi.api_post(email, key, resource, request)
     if not result:
@@ -543,8 +546,20 @@ def vigiles_request(vgls_chk):
     if outfile is not None:
         print_report_overview(result)
         print_summary(result)
-        print('\n\tLocal summary written to:\n\t  %s' %
-                os.path.relpath(outfile.name))
+        if upload_only:
+            url_parts = [llapi.VigilesURL.strip("/"), "groups"]
+            for key in ("group_token", "folder_token"):
+                token = result.get(key)
+                if token:
+                    url_parts.append(token)
+            sbom_url = "/".join(url_parts)
+            print('\n-- SBOM uploaded successfully --')
+            print('\n\t To view or scan it for a vulnerability report visit :\n'
+                  '\t %s \n' % sbom_url)
+        else:
+            print('\n\tLocal summary written to:\n\t %s \n' %
+                  os.path.relpath(outfile.name))
+
 
 
 if __name__ == '__main__':
