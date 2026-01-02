@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.21.1] - 2026-01-02
+
+### Fixed
+
+* [checkcves.py] prevent api call when vigiles key is missing from default location
+* [checkcves.py] fix output message when UPLOAD_SBOM_ONLY is activated
+
 ## [v1.21.0] - 2025-11-25
 
 ### Fixed
