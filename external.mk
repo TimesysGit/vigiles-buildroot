@@ -140,9 +140,73 @@ ifeq ($(VIGILES_REQUIRE_ALL_HASHFILES),y)
 vigiles-opts    += -i
 endif
 
-vigiles-ecosystems	:= $(call strip,$(VIGILES_ECOSYSTEMS))
+vigiles-ecosystems	:= $(call qstrip,$(VIGILES_ECOSYSTEMS))
 ifneq ($(vigiles-ecosystems),)
-vigiles-opts	+= -e $(vigiles-ecosystems)
+vigiles-opts	+= -e "$(vigiles-ecosystems)"
+endif
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM),y)
+vigiles-bin-path := $(call qstrip,$(BR2_EXTERNAL_VIGILES_CLI_BIN_PATH))
+ifeq ($(strip $(vigiles-bin-path)),)
+$(error Vigiles ERROR: Download SBOM is enabled, but the path to the vigiles CLI binary is not set. Please set it in menuconfig)
+endif
+vigiles-opts += --download-sbom
+vigiles-opts += --vigiles-bin "$(vigiles-bin-path)"
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX),y)
+vigiles-opts += --download-sbom-format "cyclonedx"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_SPDX),y)
+vigiles-opts += --download-sbom-format "spdx"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE),y)
+vigiles-opts += --download-sbom-format "spdx-lite"
+endif
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_JSON),y)
+vigiles-opts += --download-sbom-file-type "json"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XML),y)
+vigiles-opts += --download-sbom-file-type "xml"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_YAML),y)
+vigiles-opts += --download-sbom-file-type "yaml"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_TAG),y)
+vigiles-opts += --download-sbom-file-type "tag"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLSX),y)
+vigiles-opts += --download-sbom-file-type "xlsx"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLS),y)
+vigiles-opts += --download-sbom-file-type "xls"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_RDFXML),y)
+vigiles-opts += --download-sbom-file-type "rdfxml"
+endif
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_7),y)
+vigiles-opts += --download-sbom-version "1.7"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_6),y)
+vigiles-opts += --download-sbom-version "1.6"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_5),y)
+vigiles-opts += --download-sbom-version "1.5"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_4),y)
+vigiles-opts += --download-sbom-version "1.4"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_3),y)
+vigiles-opts += --download-sbom-version "1.3"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_2),y)
+vigiles-opts += --download-sbom-version "1.2"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_1),y)
+vigiles-opts += --download-sbom-version "1.1"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_3),y)
+vigiles-opts += --download-sbom-version "2.3"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_2),y)
+vigiles-opts += --download-sbom-version "2.2"
+endif
+endif
+
+# CycloneDX SBOMs cannot be upgraded or downgraded. If we generate CycloneDX
+# 1.4 and also request a CycloneDX download, the requested download version
+# must be 1.4.
+ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
+ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX),y)
+ifneq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_4),y)
+$(error Vigiles ERROR: For CycloneDX downloads, SBOM versions cannot be upgraded or downgraded when "CycloneDX 1.4 JSON" SBOM generation is selected. Please set the download SBOM version to 1.4 in menuconfig to download a CycloneDX SBOM in a different file type)
+endif
+endif
 endif
 
 ifneq ($(filter y,$(BR2_EXTERNAL_VIGILES) $(BR2_EXTERNAL_TIMESYS_VIGILES)),)

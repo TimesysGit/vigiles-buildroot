@@ -555,7 +555,7 @@ def vigiles_request(vgls_chk):
         else:
             print('\n\tLocal summary written to:\n\t %s \n' %
                   os.path.relpath(outfile.name))
-
+    return result
 
 
 if __name__ == '__main__':

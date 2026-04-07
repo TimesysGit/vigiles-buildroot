@@ -335,6 +335,116 @@ config VIGILES_SBOM_FORMAT_CYCLONEDX_1.4
 
 endchoice
 
+config VIGILES_DOWNLOAD_SBOM
+    bool "Download Converted SBOM (CycloneDX/SPDX)"
+    depends on !VIGILES_GENERATE_SBOM_ONLY
+    default n
+    help
+      Download an SBOM from Vigiles in CycloneDX or SPDX format.
+      This uses a user-provided vigiles CLI path.
+
+if VIGILES_DOWNLOAD_SBOM
+
+config BR2_EXTERNAL_VIGILES_CLI_BIN_PATH
+    string "Path to vigiles CLI binary (required)"
+    default ""
+    help
+      Path to the vigiles CLI binary.
+      This value is required when "Download Converted SBOM
+      (CycloneDX/SPDX)" is enabled.
+
+choice
+    prompt "SBOM format"
+    default VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+    bool "CycloneDX"
+
+config VIGILES_DOWNLOAD_SBOM_SPEC_SPDX
+    bool "SPDX"
+
+config VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+    bool "SPDX Lite"
+
+endchoice
+
+choice
+    prompt "SBOM file type"
+    default VIGILES_DOWNLOAD_SBOM_FILE_JSON
+
+config VIGILES_DOWNLOAD_SBOM_FILE_JSON
+    bool "JSON"
+
+config VIGILES_DOWNLOAD_SBOM_FILE_XML
+    bool "XML"
+
+config VIGILES_DOWNLOAD_SBOM_FILE_YAML
+    bool "YAML"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_FILE_TAG
+    bool "Tag"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_FILE_XLSX
+    bool "XLSX"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_FILE_XLS
+    bool "XLS"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_FILE_RDFXML
+    bool "RDFXML"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+endchoice
+
+choice
+    prompt "SBOM version"
+    default VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_6 if VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+    default VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_3 if VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_7
+    bool "1.7"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_6
+    bool "1.6"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_5
+    bool "1.5"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_4
+    bool "1.4"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_3
+    bool "1.3"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_2
+    bool "1.2"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_1
+    bool "1.1"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_3
+    bool "2.3"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+config VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_2
+    bool "2.2"
+    depends on VIGILES_DOWNLOAD_SBOM_SPEC_SPDX || VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE
+
+endchoice
+
+endif
+
 config VIGILES_NOTIFICATION_SUBSCRIBE
     bool "Subscribe SBOM Report Notification"
     default n
@@ -402,4 +512,3 @@ config VIGILES_ECOSYSTEMS
 
       Setting this to "all" will include all ecosystems
 endif
-

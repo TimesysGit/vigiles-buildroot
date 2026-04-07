@@ -50,6 +50,8 @@ from manifest import VIGILES_DIR, write_manifest, ALLOWED_SBOM_FORMATS
 import packages
 from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
+from clitasks import validate_download_options, download_sbom
+from constants import DOWNLOAD_SBOM_FORMATS
 
 from utils import set_debug, set_verbose
 from utils import dbg, info, warn, err
@@ -118,6 +120,21 @@ def parse_args():
                         help='Comma separated string of ecosystems that should \
                             be used to include ecosystem specific vulnerabilities \
                             into the vulnerability reports')
+    parser.add_argument('--download-sbom',
+                        help='Download Converted SBOM (CycloneDX/SPDX)',
+                        action='store_true')
+    parser.add_argument('--vigiles-bin',
+                        help='Path to vigiles CLI binary')
+    parser.add_argument('--download-sbom-format',
+                        help='SBOM format to download',
+                        type=str.lower,
+                        choices=DOWNLOAD_SBOM_FORMATS)
+    parser.add_argument('--download-sbom-file-type',
+                        type=str.lower,
+                        help='SBOM file type to download')
+    parser.add_argument('--download-sbom-version',
+                        help='SBOM version to download')
+
     args = parser.parse_args()
 
     sbom_format = args.sbom_format.strip().lower()
@@ -125,6 +142,9 @@ def parse_args():
         err("%s is not a supported SBOM format choose from: %s" % (
             sbom_format, ALLOWED_SBOM_FORMATS.values()))
         sys.exit(1)
+
+    # Validates download-sbom and related args, no-op unless download is requested
+    validate_download_options(parser, args)
 
     set_debug(args.debug)
 
@@ -159,7 +179,12 @@ def parse_args():
         'subscribe': args.subscribe.strip(),
         'require_all_configs': args.require_all_configs,
         'require_all_hashfiles': args.require_all_hashfiles,
-        'ecosystems': args.ecosystems.strip()
+        'ecosystems': args.ecosystems.strip(),
+        'download_sbom': args.download_sbom,
+        'vigiles_bin': args.vigiles_bin.strip() if args.vigiles_bin else '',
+        'download_sbom_format': args.download_sbom_format.strip() if args.download_sbom_format else '',
+        'download_sbom_file_type': args.download_sbom_file_type.strip() if args.download_sbom_file_type else '',
+        'download_sbom_version': args.download_sbom_version.strip() if args.download_sbom_version else '',
     }
 
     if not vgls.get('odir', None):
@@ -251,7 +276,7 @@ def run_check(vgls):
         'subscribe': vgls.get('subscribe'),
         'ecosystems': vgls.get('ecosystems', '')
     }
-    vigiles_request(vgls_chk)
+    return vigiles_request(vgls_chk)
 
 
 def __main__():
@@ -263,7 +288,10 @@ def __main__():
     write_manifest(vgls)
 
     if vgls['do_check']:
-        run_check(vgls)
+        result = run_check(vgls)
+
+        if vgls.get('download_sbom'):
+            download_sbom(vgls, result)
 
     if vgls['require_all_configs'] and vgls.get('missing_configs'):
         err('Config.in files not found for packages: %s' % vgls['missing_configs'])

@@ -429,6 +429,35 @@ This option can be found under Advanced Vigiles option
 This option can be used to specify the format of SBOM to be generated. At present
 vigiles-buildroot supports generating SBOMs in `Cyclonedx 1.4 JSON` and `Vigiles JSON` formats. By default, `Vigiles JSON` format SBOM will be generated.
 
+### Downloading Converted SBOMs
+
+This option can be found under Advanced Vigiles option
+
+```
+                *** Advanced Vigiles / Debug Options ***
+        [*]   Download Converted SBOM (CycloneDX/SPDX)
+        ()      Path to vigiles CLI binary (required)
+                SBOM format -->
+                SBOM file type -->
+                SBOM version -->
+```
+
+This option enables downloading a converted SBOM in standard CycloneDX or SPDX formats after the upload process completes. The configured vigiles CLI binary is used to download the requested converted SBOM into the vigiles output directory.
+
+The [vigiles-cli](https://github.com/TimesysGit/vigiles-cli) is required to be installed, and the path to its binary should be provided.
+
+**Note:** Using the latest version of vigiles-cli is recommended. However, if you need to use an older version, ensure it is v1.0.3 or higher
+
+Supported options are:
+
+* SBOM formats: `CycloneDX`, `SPDX`, and `SPDX-Lite`
+* SBOM file types for `CycloneDX`: `JSON` and `XML`
+* SBOM file types for `SPDX` and `SPDX-Lite`: `JSON`, `XML`, `YAML`, `Tag`, `XLSX`, `XLS`, and `RDFXML`
+* SBOM versions for `CycloneDX`: `1.7`, `1.6`, `1.5`, `1.4`, `1.3`, `1.2`, and `1.1`
+* SBOM versions for `SPDX` and `SPDX-Lite`: `2.3` and `2.2`
+
+**Note:** CycloneDX SBOMs cannot be upgraded or downgraded. If SBOM format `CycloneDX 1.4 JSON` is selected for SBOM generation, then the CycloneDX download `SBOM version` must also be set to `1.4`.
+
 ### Subscribe SBOM Report Notification (Enterprise Vigiles Only)
 
 This option can be found under Advanced Vigiles option
@@ -592,9 +621,6 @@ The Vigiles CVE Scanner and Buildroot support are maintained by
 [The Lynx Security team](mailto:vigiles@timesys.com).
 
 For Updates, Support and More Information, please see:
-
 [Vigiles Website](https://www.lynx.com/solutions/vulnerability-mitigation-management)
-
 and
-
 [vigiles-buildroot @ GitHub](https://github.com/TimesysGit/vigiles-buildroot)
