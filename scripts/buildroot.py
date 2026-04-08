@@ -362,7 +362,10 @@ def _is_valid_cpe_id(cpe_id):
 def _generate_cpe_id(pkg_info):
     cpe_id = ""
     for item in br2_cpe_id_components:
-        cpe_id += f"{pkg_info.get(item, '*')}:"
+        value = pkg_info.get(item, '*')
+        if item == 'cpe-id-update' and value == '-':
+            value = '*'
+        cpe_id += f"{value}:"
 
     cpe_id = cpe_id[:-1]  # remove extra colon at the end of string
     return cpe_id if _is_valid_cpe_id(cpe_id) else "UNKNOWN"
@@ -403,7 +406,7 @@ def _fixup_make_info(vgls):
                 cpe_update = pdict.get('cpe-id-update', '')
                 _cve_version = cpe_version
                 
-                if cpe_update and cpe_update != "*":
+                if cpe_update and cpe_update not in ["*", "-"]:
                     _cve_version += cpe_update
                     
                 pdict['cve-version'] = _cve_version
@@ -566,4 +569,3 @@ def get_all_pkg_make_info(odir):
                 make_dict[pkg][kconfig_to_py(mk_key)] = kconfig_bool(value.strip())
 
     return make_dict
-
