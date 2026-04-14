@@ -199,6 +199,13 @@ def create_cyclonedx_sbom(vgls):
         }, additional_pkg=True)
         bom.components.add(component)
 
+    # mark user provided cves as not affected
+    cves_list = _get_user_whitelist(vgls["whtlst"])
+    for cve in cves_list:
+        vuln = create_vulnerability(
+            vgls, cve, status="ignored")
+        component.add_vulnerability(vuln)
+
     del vgls["bom_refs"]
     outputter = get_instance(bom=bom, output_format=OutputFormat.JSON)
     bom_json = outputter.output_as_string()
@@ -210,12 +217,17 @@ def create_vulnerability(vgls, cve, status, pkg="", version=""):
         "patched": ImpactAnalysisState.RESOLVED_WITH_PEDIGREE,
         "ignored": ImpactAnalysisState.NOT_AFFECTED
     }
+
+    detail = "CVE included in SBOM's Not Affected" if status == "ignored" else None
+
     vuln = Vulnerability(
             bom_ref=generate_bom_ref(),
             id=cve,
             analysis=VulnerabilityAnalysis(
-                state=vuln_status_map[status]
+                state=vuln_status_map[status],
+                detail=detail
             ))
+
     if pkg:
         bom_target = BomTarget(
                 ref=get_bom_ref(vgls["bom_refs"], pkg)
