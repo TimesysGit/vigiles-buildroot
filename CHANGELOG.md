@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.22.0] - 2026-05-08
+
+### Added
+
+* feature: add option to download converted SBOMs
+
+### Fixed
+
+* [buildroot.py] fix cve_version and cpe_id update part handling
+* [cyclonedx_sbom] add support to mark custom CVEs as not affected
+
 ## [v1.21.1] - 2026-01-02
 
 ### Fixed
