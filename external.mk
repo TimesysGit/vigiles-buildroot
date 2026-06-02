@@ -161,22 +161,6 @@ else ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_SPDX_LITE),y)
 vigiles-opts += --download-sbom-format "spdx-lite"
 endif
 
-ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_JSON),y)
-vigiles-opts += --download-sbom-file-type "json"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XML),y)
-vigiles-opts += --download-sbom-file-type "xml"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_YAML),y)
-vigiles-opts += --download-sbom-file-type "yaml"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_TAG),y)
-vigiles-opts += --download-sbom-file-type "tag"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLSX),y)
-vigiles-opts += --download-sbom-file-type "xlsx"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLS),y)
-vigiles-opts += --download-sbom-file-type "xls"
-else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_RDFXML),y)
-vigiles-opts += --download-sbom-file-type "rdfxml"
-endif
-
 ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_7),y)
 vigiles-opts += --download-sbom-version "1.7"
 else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_6),y)
@@ -195,6 +179,26 @@ else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_3),y)
 vigiles-opts += --download-sbom-version "2.3"
 else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_2_2),y)
 vigiles-opts += --download-sbom-version "2.2"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_VERSION_SPDX_3_0_1),y)
+vigiles-opts += --download-sbom-version "3.0.1"
+endif
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_JSON),y)
+vigiles-opts += --download-sbom-file-type "json"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XML),y)
+vigiles-opts += --download-sbom-file-type "xml"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_YAML),y)
+vigiles-opts += --download-sbom-file-type "yaml"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_TAG),y)
+vigiles-opts += --download-sbom-file-type "tag"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLSX),y)
+vigiles-opts += --download-sbom-file-type "xlsx"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_XLS),y)
+vigiles-opts += --download-sbom-file-type "xls"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_RDFXML),y)
+vigiles-opts += --download-sbom-file-type "rdfxml"
+else ifeq ($(VIGILES_DOWNLOAD_SBOM_FILE_JSON_LD),y)
+vigiles-opts += --download-sbom-file-type "json-ld"
 endif
 endif
 

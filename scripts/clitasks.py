@@ -60,18 +60,20 @@ def validate_download_options(parser, args):
     sbom_file_type = args.download_sbom_file_type.strip()
     sbom_version = args.download_sbom_version.strip()
 
-    allowed_file_types = DOWNLOAD_SBOM_OPTIONS[sbom_format]["file_types"]
-    if sbom_file_type not in allowed_file_types:
-        parser.error(
-            f"argument --download-sbom-file-type: invalid choice: '{sbom_file_type}' "
-            f"for format '{sbom_format}' (choose from {', '.join(sorted(allowed_file_types))})"
-        )
-
-    allowed_versions = DOWNLOAD_SBOM_OPTIONS[sbom_format]["versions"]
+    download_options = DOWNLOAD_SBOM_OPTIONS[sbom_format]
+    allowed_versions = tuple(download_options.keys())
     if sbom_version not in allowed_versions:
         parser.error(
             f"argument --download-sbom-version: invalid choice: '{sbom_version}' "
-            f"for format '{sbom_format}' (choose from {', '.join(sorted(allowed_versions, reverse=True))})"
+            f"for format '{sbom_format}' (choose from {', '.join(allowed_versions)})"
+        )
+
+    allowed_file_types = download_options[sbom_version]
+    if sbom_file_type not in allowed_file_types:
+        parser.error(
+            f"argument --download-sbom-file-type: invalid choice: '{sbom_file_type}' "
+            f"for format '{sbom_format}' and version '{sbom_version}' "
+            f"(choose from {', '.join(allowed_file_types)})"
         )
 
     if source_sbom_format.lower() == 'cyclonedx_1.4' and sbom_format == 'cyclonedx':
@@ -101,7 +103,14 @@ def download_sbom(vgls, result):
 
     sbom_name = vgls['manifest_name']
     download_dir = vgls['vdir']
-    suffix_ext = "spdx" if sbom_file_type == "tag" else sbom_file_type
+
+    if sbom_file_type == "tag":
+        suffix_ext = "spdx"
+    elif sbom_file_type == "json-ld":
+        suffix_ext = "json"
+    else:
+        suffix_ext = sbom_file_type
+
     output_path = os.path.join(
         download_dir,
         "%s-%s-%s.%s" % (

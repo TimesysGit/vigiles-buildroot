@@ -129,11 +129,11 @@ def parse_args():
                         help='SBOM format to download',
                         type=str.lower,
                         choices=DOWNLOAD_SBOM_FORMATS)
+    parser.add_argument('--download-sbom-version',
+                        help='SBOM version to download')
     parser.add_argument('--download-sbom-file-type',
                         type=str.lower,
                         help='SBOM file type to download')
-    parser.add_argument('--download-sbom-version',
-                        help='SBOM version to download')
 
     args = parser.parse_args()
 
@@ -183,8 +183,8 @@ def parse_args():
         'download_sbom': args.download_sbom,
         'vigiles_bin': args.vigiles_bin.strip() if args.vigiles_bin else '',
         'download_sbom_format': args.download_sbom_format.strip() if args.download_sbom_format else '',
-        'download_sbom_file_type': args.download_sbom_file_type.strip() if args.download_sbom_file_type else '',
         'download_sbom_version': args.download_sbom_version.strip() if args.download_sbom_version else '',
+        'download_sbom_file_type': args.download_sbom_file_type.strip() if args.download_sbom_file_type else '',
     }
 
     if not vgls.get('odir', None):

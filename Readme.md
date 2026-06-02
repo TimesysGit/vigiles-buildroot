@@ -438,8 +438,8 @@ This option can be found under Advanced Vigiles option
         [*]   Download Converted SBOM (CycloneDX/SPDX)
         ()      Path to vigiles CLI binary (required)
                 SBOM format -->
-                SBOM file type -->
                 SBOM version -->
+                SBOM file type -->
 ```
 
 This option enables downloading a converted SBOM in standard CycloneDX or SPDX formats after the upload process completes. The configured vigiles CLI binary is used to download the requested converted SBOM into the vigiles output directory.
@@ -451,10 +451,12 @@ The [vigiles-cli](https://github.com/TimesysGit/vigiles-cli) is required to be i
 Supported options are:
 
 * SBOM formats: `CycloneDX`, `SPDX`, and `SPDX-Lite`
-* SBOM file types for `CycloneDX`: `JSON` and `XML`
-* SBOM file types for `SPDX` and `SPDX-Lite`: `JSON`, `XML`, `YAML`, `Tag`, `XLSX`, `XLS`, and `RDFXML`
 * SBOM versions for `CycloneDX`: `1.7`, `1.6`, `1.5`, `1.4`, `1.3`, `1.2`, and `1.1`
-* SBOM versions for `SPDX` and `SPDX-Lite`: `2.3` and `2.2`
+* SBOM file types for `CycloneDX`: `JSON`, `XML`
+* SBOM versions for `SPDX` and `SPDX-Lite`: `3.0.1`, `2.3`, and `2.2`
+* SBOM file types for `SPDX` and `SPDX-Lite`:
+  * `3.0.1`: `JSON-LD`
+  * `2.3` and `2.2`: `JSON`, `XML`, `YAML`, `Tag`, `XLSX`, `XLS`, `RDFXML`
 
 **Note:** CycloneDX SBOMs cannot be upgraded or downgraded. If SBOM format `CycloneDX 1.4 JSON` is selected for SBOM generation, then the CycloneDX download `SBOM version` must also be set to `1.4`.
 
@@ -472,7 +474,7 @@ This feature is currently available for Enterprise vigiles only.
 
 ### Required Files check
 
-Vigiles-buildroot parses .config and .hash files for package dependencies and checksums. User can set `Require all config files` and `Require all config files`
+Vigiles-buildroot parses .config and .hash files for package dependencies and checksums. User can set `Require all config files` and `Require all hashfiles`
 options in menuconfig to raise an error if any file is missing. By default, vigiles-buildroot will only show a warning message if any of these files is missing.
 
 
