@@ -12,6 +12,9 @@ from utils import get_valid_los
 def _parse_addl_pkg_csv(extra_csv):
     extra_rows = []
 
+    if not extra_csv:
+        return extra_rows
+
     if not os.path.exists(extra_csv):
         warn("Skipping Non-Existent additional-package File: %s" % extra_csv)
         return extra_rows

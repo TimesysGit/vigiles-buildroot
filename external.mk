@@ -114,10 +114,35 @@ ifneq ($(vigiles-output),)
 vigiles-opts	+= -O "$(vigiles-output)"
 endif
 
-ifeq ($(VIGILES_SBOM_FORMAT_VIGILES),y)
-vigiles-opts    += -f "vigiles"
-else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
+ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
+$(warning Vigiles WARNING: VIGILES_SBOM_FORMAT_CYCLONEDX_1.4 is deprecated. \
+Please migrate your configuration to VIGILES_SBOM_FORMAT_CYCLONEDX \
+and select CycloneDX version 1.4.)
 vigiles-opts    += -f "cyclonedx_1.4"
+else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX),y)
+ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_4),y)
+vigiles-opts    += -f "cyclonedx_1.4"
+else ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_6),y)
+vigiles-opts    += -f "cyclonedx_1.6"
+vigiles-cdx-cli := $(call qstrip,$(BR2_EXTERNAL_VIGILES_CYCLONEDX_CLI))
+ifneq ($(strip $(vigiles-cdx-cli)),)
+vigiles-opts    += --cyclonedx-cli "$(vigiles-cdx-cli)"
+endif
+endif
+else
+vigiles-opts    += -f "vigiles"
+endif
+
+ifeq ($(VIGILES_CYCLONEDX_MERGE_CHILD_SBOMS),y)
+vigiles-cdx-child-sboms := $(call qstrip,$(BR2_EXTERNAL_VIGILES_CYCLONEDX_CHILD_SBOMS))
+ifeq ($(strip $(vigiles-cdx-child-sboms)),)
+$(error Vigiles ERROR: Child SBOM composition is enabled, but no child SBOM paths are set)
+endif
+vigiles-opts += --child-sboms "$(vigiles-cdx-child-sboms)"
+ifeq ($(strip $(vigiles-cdx-cli)),)
+$(error Vigiles ERROR: Child SBOM composition is enabled, but the CycloneDX CLI executable is not set)
+endif
+
 endif
 
 ifeq ($(VIGILES_NOTIFICATION_SUBSCRIBE),y)
@@ -205,7 +230,7 @@ endif
 # CycloneDX SBOMs cannot be upgraded or downgraded. If we generate CycloneDX
 # 1.4 and also request a CycloneDX download, the requested download version
 # must be 1.4.
-ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_1.4),y)
+ifeq ($(VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_4),y)
 ifeq ($(VIGILES_DOWNLOAD_SBOM_SPEC_CYCLONEDX),y)
 ifneq ($(VIGILES_DOWNLOAD_SBOM_VERSION_CDX_1_4),y)
 $(error Vigiles ERROR: For CycloneDX downloads, SBOM versions cannot be upgraded or downgraded when "CycloneDX 1.4 JSON" SBOM generation is selected. Please set the download SBOM version to 1.4 in menuconfig to download a CycloneDX SBOM in a different file type)

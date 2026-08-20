@@ -19,7 +19,11 @@ from utils import dbg, info, warn, err
 
 from amendments import amend_manifest
 
-ALLOWED_SBOM_FORMATS = {"VIGILES": "vigiles","CDX1.4": "cyclonedx_1.4"}
+ALLOWED_SBOM_FORMATS = {
+    "VIGILES": "vigiles",
+    "CDX1.4": "cyclonedx_1.4",
+    "CDX1.6": "cyclonedx_1.6",
+}
 DEFAULT_SUPPLIER = 'Buildroot ()'
 VIGILES_DIR = 'vigiles'
 VIGILES_DEFAULT_DISTRO = 'buildroot'
@@ -128,10 +132,33 @@ def write_manifest(vgls):
     sbom_format = vgls.get("sbom_format", "")
     vgls["manifest_name"] = _get_sbom_name(vgls)
 
-    if sbom_format.lower() == ALLOWED_SBOM_FORMATS["CDX1.4"]:
-        from cyclonedx_sbom import create_cyclonedx_sbom
-        final = create_cyclonedx_sbom(vgls)
+    if sbom_format.lower() in {
+        ALLOWED_SBOM_FORMATS["CDX1.4"],
+        ALLOWED_SBOM_FORMATS["CDX1.6"],
+    }:
+        from cyclonedx_sbom import (
+            CycloneDxError,
+            compose_cyclonedx_sboms,
+            generate_cyclonedx_sbom,
+            validate_cyclonedx_sbom,
+        )
 
+        try:
+            requested_version = {
+                ALLOWED_SBOM_FORMATS["CDX1.4"]: "1.4",
+                ALLOWED_SBOM_FORMATS["CDX1.6"]: "1.6",
+            }[sbom_format.lower()]
+            if (
+                requested_version == "1.6"
+                and vgls.get("child_sboms")
+            ):
+                merged_path = compose_cyclonedx_sboms(vgls)
+                final = validate_cyclonedx_sbom(vgls, merged_path)
+            else:
+                final = generate_cyclonedx_sbom(vgls, requested_version)
+        except CycloneDxError as exc:
+            err(str(exc))
+            sys.exit(1)
     elif sbom_format.lower() == ALLOWED_SBOM_FORMATS["VIGILES"]:
         final = _init_manifest(vgls)
         amend_manifest(vgls, final)

@@ -52,6 +52,8 @@ from checkcves import vigiles_request
 from kernel_uboot import get_kernel_info, get_uboot_info
 from clitasks import validate_download_options, download_sbom
 from constants import DOWNLOAD_SBOM_FORMATS
+from cyclonedx_sbom.constants import MIN_COMPOSITION_PYTHON
+from cyclonedx_sbom.errors import ChildSbomError
 
 from utils import set_debug, set_verbose
 from utils import dbg, info, warn, err
@@ -107,6 +109,10 @@ def parse_args():
     parser.add_argument('-f', '--sbom-format', dest='sbom_format',
                         help='Format of generated sbom like cyclonedx',
                         default='vigiles')
+    parser.add_argument('--child-sboms', nargs='+', metavar='PATH',
+                        help='Paths to child CycloneDX JSON SBOMs')
+    parser.add_argument('--cyclonedx-cli',
+                        help='Path or command name for the CycloneDX CLI executable')
     parser.add_argument('-s', '--subscribe', dest='subscribe',
                         help='Set subscription frequency for sbom report notifications: "none", "daily", "weekly", "monthly"',
                         default="")
@@ -136,12 +142,49 @@ def parse_args():
                         help='SBOM file type to download')
 
     args = parser.parse_args()
+    child_sboms = args.child_sboms or []
 
     sbom_format = args.sbom_format.strip().lower()
     if sbom_format not in ALLOWED_SBOM_FORMATS.values():
         err("%s is not a supported SBOM format choose from: %s" % (
             sbom_format, ALLOWED_SBOM_FORMATS.values()))
         sys.exit(1)
+
+    if sbom_format == ALLOWED_SBOM_FORMATS["CDX1.6"] and sys.version_info < MIN_COMPOSITION_PYTHON:
+        parser.error(
+            "CycloneDX 1.6 SBOM generation requires Buildroot's generate-cyclonedx utility, "
+            "which is not compatible with the current Python interpreter (%d.%d). "
+            "Python %d.%d or later is required."
+            % (
+                sys.version_info[0],
+                sys.version_info[1],
+                MIN_COMPOSITION_PYTHON[0],
+                MIN_COMPOSITION_PYTHON[1],
+            )
+        )
+
+    if child_sboms and sbom_format != ALLOWED_SBOM_FORMATS["CDX1.6"]:
+        parser.error(
+            "--child-sboms requires --sbom-format cyclonedx_1.6"
+        )
+    if child_sboms and sys.version_info < MIN_COMPOSITION_PYTHON:
+        parser.error(
+            "CycloneDX 1.6 SBOM composition requires Python 3.9 or newer; "
+            "current interpreter is Python %d.%d" % sys.version_info[:2]
+        )
+
+    if child_sboms:
+        from cyclonedx_sbom.normalize import expand_child_sbom_paths
+
+        try:
+            child_sboms = expand_child_sbom_paths(child_sboms)
+        except ChildSbomError as exc:
+            parser.error(str(exc))
+
+    if child_sboms and not args.cyclonedx_cli:
+        parser.error(
+            "--cyclonedx-cli is required with --child-sboms"
+        )
 
     # Validates download-sbom and related args, no-op unless download is requested
     validate_download_options(parser, args)
@@ -176,6 +219,9 @@ def parse_args():
         'include_virtual_pkgs': args.include_virtual_pkgs,
         'vigiles_output': args.vigiles_output,
         'sbom_format': args.sbom_format.strip(),
+        'child_sboms': child_sboms,
+        'cyclonedx_cli': args.cyclonedx_cli.strip()
+            if args.cyclonedx_cli else '',
         'subscribe': args.subscribe.strip(),
         'require_all_configs': args.require_all_configs,
         'require_all_hashfiles': args.require_all_hashfiles,

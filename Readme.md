@@ -16,7 +16,10 @@ To request a trial account, please contact us at sales@timesys.com
 Requirements
 ============
 - [Buildroot](https://github.com/buildroot/buildroot/) version 2018.11.x and above
-- Python version 3.6 and above
+- Python version 3.6 or later
+- Python version 3.9 or later is required when child CycloneDX SBOM composition is enabled or CycloneDX 1.6 is selected, as these features use Buildroot's generate-cyclonedx utility, which is not compatible with earlier Python versions.
+- [CycloneDX CLI](https://github.com/CycloneDX/cyclonedx-cli) when child
+  CycloneDX SBOM composition is enabled
 
 Note: Support for CPE_ID variables was introduced in buildroot from version 2021.02, therefore for versions before that 
 vigiles-buildroot will set the cpe_id variable to "UNKNOWN"
@@ -36,6 +39,11 @@ Installation
     ```sh
     python3 -m pip install -r vigiles-buildroot/requirements.txt
     ```
+
+    This installs the Python dependencies required by CycloneDX composition.
+
+    **Note:** The CycloneDX CLI is a standalone .NET application, and must be installed separately when child SBOM composition is used. See
+    the [CycloneDX CLI installation options](https://github.com/CycloneDX/cyclonedx-cli).
 
 Setup
 =====
@@ -426,8 +434,49 @@ This option can be found under Advanced Vigiles option
         Select SBOM format -->
 ```
 
-This option can be used to specify the format of SBOM to be generated. At present
-vigiles-buildroot supports generating SBOMs in `Cyclonedx 1.4 JSON` and `Vigiles JSON` formats. By default, `Vigiles JSON` format SBOM will be generated.
+This option can be used to specify the format of SBOM to be generated.
+vigiles-buildroot supports `Vigiles JSON`, `CycloneDX 1.4 JSON`, and
+`CycloneDX 1.6 JSON`. CycloneDX 1.4 uses the Vigiles generator. CycloneDX 1.6
+normally uses Buildroot's `utils/generate-cyclonedx` utility. 
+When the utility is unavailable, the CycloneDX CLI
+converts the Vigiles-generated `CycloneDX 1.4 JSON` to `CycloneDX 1.6 JSON`
+
+By default, `Vigiles JSON` is generated.
+
+### Collecting Child CycloneDX SBOMs
+
+Child SBOM collection is available when CycloneDX 1.6 generation is selected:
+
+```
+        [*]   Merge child CycloneDX SBOMs
+        ()      Child SBOM paths
+        ()      CycloneDX CLI executable path
+```
+
+`Child SBOM paths` is a comma-separated list of CycloneDX JSON files:
+
+```text
+sboms/npm.cdx.json,sboms/rust.cdx.json
+```
+
+Every listed child is required. Relative paths are resolved from the Buildroot
+source directory, and paths containing commas are not supported. Each child
+must define its subject as `metadata.component`; that component will be used
+for identity matching and parent attachment during composition.
+
+Run `python3 -m pip install -r vigiles-buildroot/requirements.txt` before using
+child SBOM composition. Composition also requires the standalone CycloneDX CLI.
+Set `CycloneDX CLI executable path` to its executable path or to a command name
+that is available on `PATH`.
+
+```
+/usr/local/bin/cyclonedx
+```
+
+Normalized files are written under `<vigiles-output>/cyclonedx/normalized/`.
+
+Final merged SBOM is written under `<vigiles-output>/`.
+
 
 ### Downloading Converted SBOMs
 

@@ -328,12 +328,61 @@ config VIGILES_SBOM_FORMAT_VIGILES
     help
         Generate SBOM in Vigiles JSON format
 
-config VIGILES_SBOM_FORMAT_CYCLONEDX_1.4
-    bool "CycloneDX 1.4 JSON"
+config VIGILES_SBOM_FORMAT_CYCLONEDX
+    bool "CycloneDX JSON"
     help
-        Generate SBOM in CycloneDX 1.4 JSON format
+        Generate an SBOM in CycloneDX JSON format.
 
 endchoice
+
+choice
+    prompt "CycloneDX version"
+    default VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_4
+    depends on VIGILES_SBOM_FORMAT_CYCLONEDX
+
+config VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_4
+    bool "1.4"
+    help
+        Always generate CycloneDX 1.4 with the Vigiles generator.
+
+config VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_6
+    bool "1.6"
+    help
+        Generate CycloneDX 1.6 with Buildroot's utils/generate-cyclonedx
+        utility. Generation fails if the utility is unavailable unless child
+        SBOM composition is enabled; composition can convert the Vigiles 1.4
+        parent with CycloneDX CLI.
+
+endchoice
+
+config VIGILES_CYCLONEDX_MERGE_CHILD_SBOMS
+    bool "Merge child CycloneDX SBOMs"
+    depends on VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_6
+    help
+        Collect child CycloneDX JSON SBOMs, validate and normalize them,
+        generate the Buildroot parent, and merge everything into a validated
+        CycloneDX 1.6 JSON SBOM. If Buildroot's native generator is
+        unavailable, uses the Vigiles 1.4 generator and converts its output.
+        This feature requires Python 3.9 or newer.
+
+if VIGILES_CYCLONEDX_MERGE_CHILD_SBOMS
+
+config BR2_EXTERNAL_VIGILES_CYCLONEDX_CHILD_SBOMS
+    string "Child SBOM paths"
+    help
+        Comma-separated paths to CycloneDX JSON SBOM files. Every listed file
+        is required. Relative paths are resolved from the Buildroot source
+        directory. File paths containing commas are not supported.
+
+endif
+
+config BR2_EXTERNAL_VIGILES_CYCLONEDX_CLI
+    string "CycloneDX CLI executable path"
+    depends on VIGILES_SBOM_FORMAT_CYCLONEDX_VERSION_1_6
+    help
+        Path or command name for the CycloneDX CLI executable used to
+        validate and convert SBOMs. Vigiles performs composition in process.
+        This setting is required.
 
 config VIGILES_DOWNLOAD_SBOM
     bool "Download Converted SBOM (CycloneDX/SPDX)"
