@@ -34,7 +34,7 @@ VIGILES_MANIFEST_VERSION = '1.23'
 VIGILES_MANIFEST_NAME_MAX_LENGTH = 256
 VIGILES_TOOL_NAME = "vigiles-buildroot"
 VIGILES_TOOL_VENDOR = "Lynx Software Technologies Inc"
-VIGILES_TOOL_VERSION = "1.23.0"
+VIGILES_TOOL_VERSION = "1.24.0"
 
 
 def _get_machine_name(vgls):

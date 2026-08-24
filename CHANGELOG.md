@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.24.0] - 2026-08-24
+
+### Added
+
+* feature: add support for CycloneDX child SBOMs injection
+
 ## [v1.23.0] - 2026-06-30
 
 ### Added
