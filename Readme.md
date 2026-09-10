@@ -390,18 +390,47 @@ For development purposes, some "Expert" options are available by first enabling
 **```VIGILES_ENABLE_EXPERT```**. These allow for debugging of the metadata that
 is collected.
 
-These features are not supported and no documentation is provided for them.
+These features are intended for advanced use and debugging.
 
 
 ```
                *** Advanced Vigiles / Debug Options ***
         [*]   Enable Vigiles Advanced and Debugging Options (Expert)
-        [ ]   Enable Verbose Console Output
         [ ]     Write Intermediate JSON Files of Collected Metadata
-        [ ]   Include virtual packages in SBOM
-        ()    Vigiles output location
-        [ ]   Generate SBOM only (NEW)
+        [ ]     Queue SBOM Upload and Report Generation
+        (600)   Vigiles background job timeout (seconds)
+        ...
 ```
+
+### Queue SBOM Upload and Report Generation
+
+The Vigiles server supports asynchronous vulnerability report generation. To submit the
+SBOM upload and report-generation jobs without waiting for them to finish, enable the
+following option:
+
+```
+        *** Advanced Vigiles / Debug Options ***
+        ...
+        [*]   Queue SBOM Upload and Report Generation
+```
+
+Vigiles prints a message confirming that the jobs were submitted. It does not wait for the job to finish. No report is generated locally.
+
+
+### Background Job Timeout
+
+When **Queue SBOM Upload and Report Generation** is disabled, Vigiles waits for the
+asynchronous upload or report-generation job to finish. To configure the maximum wait time, set:
+
+```
+        *** Advanced Vigiles / Debug Options ***
+        ...
+        (600) Vigiles background job timeout (seconds)
+```
+
+The default wait time is 10 minutes. This timeout does not apply when **Queue SBOM
+Upload and Report Generation** is enabled because Vigiles exits immediately after the jobs are submitted.
+
 
 ### Including Virtual Packages in generated SBOM
 

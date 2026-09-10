@@ -293,17 +293,34 @@ config VIGILES_ENABLE_EXPERT
 
       If unsure, say N.
 
+config VIGILES_GENERATE_INTERMEDIATE_FILES
+    bool "Write Intermediate JSON Files of Collected Metadata"
+    depends on VIGILES_ENABLE_EXPERT
+    default n
+
+config BR2_EXTERNAL_VIGILES_QUEUE_JOBS
+    bool "Queue SBOM Upload and Report Generation"
+    depends on VIGILES_ENABLE_EXPERT
+    help
+      Submit the SBOM upload and report-generation jobs without waiting for
+      them to complete.
+
+      If unsure, choose N.
+
+config BR2_EXTERNAL_VIGILES_JOB_TIMEOUT
+    int "Vigiles background job timeout (seconds)"
+    depends on VIGILES_ENABLE_EXPERT
+    default 600
+    help
+      Maximum number of seconds to wait for an asynchronous Vigiles job
+      before failing.
+
 config VIGILES_DEBUG_OUTPUT
     bool "Enable Verbose Console Output"
     default n
     help
       This option enables "Debug Output" on the command-line when running the
       vigiles-buildroot.py script.
-
-config VIGILES_GENERATE_INTERMEDIATE_FILES
-    bool "Write Intermediate JSON Files of Collected Metadata"
-    depends on VIGILES_ENABLE_EXPERT
-    default n
 
 config VIGILES_INCLUDE_VIRTUAL_PACKAGES
     bool "Include virtual packages in SBOM"

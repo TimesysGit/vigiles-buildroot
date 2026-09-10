@@ -49,6 +49,7 @@ from buildroot import get_config_options, get_make_info, get_all_pkg_make_info
 from manifest import VIGILES_DIR, write_manifest, ALLOWED_SBOM_FORMATS
 import packages
 from checkcves import vigiles_request
+from jobs import DEFAULT_JOB_TIMEOUT
 from kernel_uboot import get_kernel_info, get_uboot_info
 from clitasks import validate_download_options, download_sbom
 from constants import DOWNLOAD_SBOM_FORMATS
@@ -61,6 +62,16 @@ from utils import dbg, info, warn, err
 
 def parse_args():
     parser = argparse.ArgumentParser()
+
+    def positive_int(value):
+        try:
+            value = int(value)
+        except ValueError:
+            raise argparse.ArgumentTypeError('must be a positive integer')
+        if value < 1:
+            raise argparse.ArgumentTypeError('must be a positive integer')
+        return value
+
     parser.add_argument('-B', '--base', dest='idir',
                         help='Buildroot Source Directory')
     parser.add_argument('-o', '--output', dest='odir',
@@ -91,6 +102,12 @@ def parse_args():
     parser.add_argument('-U', '--upload-only', dest='upload_only',
                         help='Upload the manifest only; do not wait for report.',
                         action='store_true', default=False)
+    parser.add_argument('--queue-jobs', dest='queue_jobs',
+                        help='Submit jobs and exit immediately without waiting for results.',
+                        action='store_true', default=False)
+    parser.add_argument('--timeout', type=positive_int, default=DEFAULT_JOB_TIMEOUT,
+                        help='Maximum seconds to wait for a background job '
+                             '(default: %d)' % DEFAULT_JOB_TIMEOUT)
 
     parser.add_argument('-D', '--enable-debug', dest='debug',
                         help='Enable Debug Output',
@@ -143,6 +160,9 @@ def parse_args():
 
     args = parser.parse_args()
     child_sboms = args.child_sboms or []
+
+    if args.download_sbom and args.queue_jobs:
+        parser.error('--download-sbom and --queue-jobs cannot be used together')
 
     sbom_format = args.sbom_format.strip().lower()
     if sbom_format not in ALLOWED_SBOM_FORMATS.values():
@@ -216,6 +236,8 @@ def parse_args():
         'llkey': args.llkey.strip() if args.llkey else '',
         'lldashboard': args.lldashboard.strip() if args.lldashboard else '',
         'upload_only': args.upload_only,
+        'queue_jobs': args.queue_jobs,
+        'timeout': args.timeout,
         'include_virtual_pkgs': args.include_virtual_pkgs,
         'vigiles_output': args.vigiles_output,
         'sbom_format': args.sbom_format.strip(),
@@ -318,6 +340,8 @@ def run_check(vgls):
         'kconfig': kconfig_path,
         'uconfig': uconfig_path,
         'upload_only': vgls.get('upload_only', False),
+        'queue_jobs': vgls.get('queue_jobs', False),
+        'timeout': vgls.get('timeout', DEFAULT_JOB_TIMEOUT),
         'subfolder_name': vgls.get('subfolder_name', ''),
         'subscribe': vgls.get('subscribe'),
         'ecosystems': vgls.get('ecosystems', '')
@@ -334,7 +358,11 @@ def __main__():
     write_manifest(vgls)
 
     if vgls['do_check']:
-        result = run_check(vgls)
+        try:
+            result = run_check(vgls)
+        except Exception as exc:
+            err('Vigiles request failed: %s' % exc)
+            sys.exit(1)
 
         if vgls.get('download_sbom'):
             download_sbom(vgls, result)
@@ -344,7 +372,7 @@ def __main__():
         sys.exit(1)
 
     if vgls['require_all_hashfiles'] and vgls.get('missing_hashfiles'):
-        err('hash files not found for packages: %s' % vgls['missing_configs'])
+        err('Hash files not found for packages: %s' % vgls['missing_hashfiles'])
         sys.exit(1)
 
 

@@ -94,6 +94,21 @@ ifeq ($(BR2_EXTERNAL_VIGILES_UPLOAD_ONLY),y)
 vigiles-opts	+= -U
 endif
 
+ifeq ($(BR2_EXTERNAL_VIGILES_QUEUE_JOBS),y)
+vigiles-opts	+= --queue-jobs
+endif
+
+ifeq ($(VIGILES_DOWNLOAD_SBOM),y)
+ifeq ($(BR2_EXTERNAL_VIGILES_QUEUE_JOBS),y)
+$(error Vigiles ERROR: 'Download Converted SBOM (CycloneDX/SPDX)' and 'Queue SBOM Upload and Report Generation' config options cannot be used together)
+endif
+endif
+
+vigiles-job-timeout := $(call qstrip,$(BR2_EXTERNAL_VIGILES_JOB_TIMEOUT))
+ifneq ($(vigiles-job-timeout),)
+vigiles-opts	+= --timeout $(vigiles-job-timeout)
+endif
+
 
 ifeq ($(VIGILES_ENABLE_EXPERT),y)
 ifeq ($(VIGILES_GENERATE_INTERMEDIATE_FILES),y)
