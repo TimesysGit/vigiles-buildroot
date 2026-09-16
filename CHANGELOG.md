@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.25.0] - 2026-09-29
+
+### Added
+
+* feature: Add support for async SBOM upload and report generation jobs
+
 ## [v1.24.0] - 2026-08-24
 
 ### Added
