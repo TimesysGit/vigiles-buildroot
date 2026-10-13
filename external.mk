@@ -70,6 +70,16 @@ ifneq ($(vigiles-manifest-name),)
 vigiles-opts		+= -N "$(vigiles-manifest-name)"
 endif
 
+vigiles-project-name := $(call qstrip,$(VIGILES_PROJECT_NAME))
+ifneq ($(vigiles-project-name),)
+vigiles-opts += --project-name "$(vigiles-project-name)"
+endif
+
+vigiles-project-version := $(call qstrip,$(VIGILES_PROJECT_VERSION))
+ifneq ($(vigiles-project-version),)
+vigiles-opts += --project-version "$(vigiles-project-version)"
+endif
+
 vigiles-subfolder-name 		:= $(call qstrip,$(BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME))
 ifneq ($(vigiles-subfolder-name),)
 vigiles-opts		+= -F "$(vigiles-subfolder-name)"

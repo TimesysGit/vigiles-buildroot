@@ -128,7 +128,7 @@ config BR2_EXTERNAL_VIGILES_UBOOT_CONFIG
       will still function.
 
 
-comment "Customizing / Amending Vigiles Report"
+comment "Customizing Vigiles SBOM and Report"
 
 config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
     string "Custom SBOM and Report Name"
@@ -139,6 +139,16 @@ config BR2_EXTERNAL_VIGILES_MANIFEST_NAME
 
       This option may be set to a custom value (e.g. an auto-generated build
       string) for tracking/reporting purposes.
+
+config VIGILES_PROJECT_NAME
+    string "Project name"
+    help
+      Set a custom name for the SBOM root component.
+
+config VIGILES_PROJECT_VERSION
+    string "Project version"
+    help
+      Set a custom version for the SBOM root component.
 
 
 config BR2_EXTERNAL_VIGILES_SUBFOLDER_NAME

@@ -85,6 +85,10 @@ def parse_args():
 
     parser.add_argument('-N', '--name', dest='manifest_name',
                         help='Custom Manifest/Report Name', default='')
+    parser.add_argument('--project-name', default='',
+                        help='Root component name in generated SBOMs')
+    parser.add_argument('--project-version', default='',
+                        help='Root component version in generated SBOMs')
     parser.add_argument('-F', '--subfolder', dest='subfolder_name',
                         help='Name of subfolder to upload to', default='')
     parser.add_argument('-A', '--additional-packages', dest='addl',
@@ -229,6 +233,8 @@ def parse_args():
             if args.uconfig \
             else 'auto',
         'manifest_name': args.manifest_name.strip(),
+        'project_name': args.project_name.strip(),
+        'project_version': args.project_version.strip(),
         'subfolder_name': args.subfolder_name.strip(),
         'addl': args.addl.strip() if args.addl else '',
         'excld': args.excld.strip() if args.excld else '',

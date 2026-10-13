@@ -21,10 +21,10 @@ from manifest import (
     VIGILES_TOOL_NAME,
     VIGILES_TOOL_VENDOR,
     VIGILES_TOOL_VERSION,
+    VIGILES_DEFAULT_IMAGE
 )
 from .constants import (
     LEGACY_BOM_AUTHOR,
-    LEGACY_BOM_VERSION,
     LEGACY_HASH_ALGORITHMS,
     LEGACY_NOT_AFFECTED_DETAIL,
     LEGACY_SCHEMA_URL,
@@ -137,12 +137,12 @@ def _properties(package):
     )
 
 
-def create_component(vgls, package_name, package, additional_pkg=False):
+def create_component(vgls, package_name, package, additional_pkg=False, bom_ref=None):
     """Create a CycloneDX component from Vigiles package metadata."""
     name = package.get("name", package_name)
     version = package.get("cve_version", package.get("version"))
     component = {
-        "bom-ref": get_bom_ref(vgls["bom_refs"], name),
+        "bom-ref": bom_ref or get_bom_ref(vgls["bom_refs"], name),
         "type": _component_type(package),
         "name": name,
     }
@@ -227,11 +227,15 @@ def create_cyclonedx_sbom(vgls):
     ]
     vgls["bom_refs"] = generate_bom_refs(package_names)
 
-    manifest_name = "-".join([vgls["manifest_name"], "cyclonedx"])
-    root_component = create_component(vgls, manifest_name, {
-        "type": "application",
-        "version": LEGACY_BOM_VERSION,
-    })
+    root_name = vgls.get("project_name") or VIGILES_DEFAULT_IMAGE
+    root_version = (
+        vgls.get("project_version")
+        or vgls["make"]["br2"]["meta"]["version"]
+    )
+    root_component = create_component(vgls, root_name, {
+        "type": "firmware",
+        "version": root_version,
+    }, bom_ref=generate_bom_ref())
 
     package_components = []
     components_by_name = {}

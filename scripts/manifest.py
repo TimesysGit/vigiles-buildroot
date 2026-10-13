@@ -30,7 +30,7 @@ VIGILES_DEFAULT_DISTRO = 'buildroot'
 VIGILES_DEFAULT_IMAGE = 'rootfs'
 VIGILES_DEFAULT_MANIFEST = 'buildroot-rootfs.json'
 VIGILES_DEFAULT_REPORT = 'buildroot-rootfs-report.txt'
-VIGILES_MANIFEST_VERSION = '1.23'
+VIGILES_MANIFEST_VERSION = '1.24'
 VIGILES_MANIFEST_NAME_MAX_LENGTH = 256
 VIGILES_TOOL_NAME = "vigiles-buildroot"
 VIGILES_TOOL_VENDOR = "Lynx Software Technologies Inc"
@@ -108,6 +108,14 @@ def _init_manifest(vgls):
         'machine': _machine,
         'manifest_version': VIGILES_MANIFEST_VERSION,
         'manifest_name': _get_sbom_name(vgls),
+        'root_component': {
+            'name': vgls.get("project_name") or VIGILES_DEFAULT_IMAGE,
+            'version': (
+                vgls.get("project_version")
+                or vgls["make"]["br2"]["meta"]["version"]
+            ),
+            'package_supplier': 'Organization: {}'.format(DEFAULT_SUPPLIER),
+        },
         'packages': _stripped_packages(vgls['packages'])
     }
     return build_dict

@@ -192,7 +192,7 @@ alternative path.
 > (**```BR2_TARGET_UBOOT```**) is enabled.
 
 
-### Customizing / Amending the Vigiles Report
+### Customizing Vigiles SBOM and Report
 
 In some cases, it's desirable to modify the CVE report that Vigiles generates.
 vigiles-buildroot supports the ability to _Include Additional Packages_,
@@ -228,6 +228,12 @@ output/vigiles
 ├── Custom-Name-manifest.json
 └── Custom-Name-report.txt
 ```
+
+#### SBOM Project Name and Version
+
+The root component in the generated SBOM uses the default image name `rootfs` and the Buildroot version as its project version. To set custom values,
+use the Kconfig options `VIGILES_PROJECT_NAME` and `VIGILES_PROJECT_VERSION`.
+These values change the SBOM's root component metadata; they do not affect the SBOM or report filenames.
 
 
 #### Including Additional Packages

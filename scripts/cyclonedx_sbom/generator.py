@@ -25,11 +25,13 @@ from .constants import (
     SUPPORTED_GENERATION_VERSIONS,
 )
 from .errors import CycloneDxGenerationError
+from manifest import VIGILES_DEFAULT_IMAGE
 from .utils import (
     load_cyclonedx_json,
     run_command,
     convert_sbom,
     resolve_cyclonedx_cli,
+    rewrite_references,
     validate_sbom,
     write_cyclonedx_json,
 )
@@ -42,6 +44,8 @@ class BuildrootGenerator:
         self.context = context
         self._command = None
         self._capabilities = None
+        project_name = self.context.get("project_name") or VIGILES_DEFAULT_IMAGE
+        self._root_reference = "root-" + project_name
 
     @property
     def utility_path(self):
@@ -137,8 +141,8 @@ class BuildrootGenerator:
         """Build optional arguments supported by the native utility."""
         arguments = []
         capabilities = self._capabilities or ""
-        if "--project-name" in capabilities and self.context.get("manifest_name"):
-            arguments.extend(["--project-name", self.context["manifest_name"]])
+        if "--project-name" in capabilities:
+            arguments.extend(["--project-name", self._root_reference])
 
         buildroot_version = (
             self.context.get("make", {})
@@ -146,8 +150,9 @@ class BuildrootGenerator:
             .get("meta", {})
             .get("version")
         )
-        if "--project-version" in capabilities and buildroot_version:
-            arguments.extend(["--project-version", str(buildroot_version)])
+        project_version = self.context.get("project_version") or buildroot_version
+        if "--project-version" in capabilities and project_version:
+            arguments.extend(["--project-version", str(project_version)])
 
         if (
             "--virtual" in capabilities
@@ -190,7 +195,17 @@ class BuildrootGenerator:
             cwd=Path(self.context["topdir"]),
             input_text=show_info,
         )
-        return self._parse_output(result.stdout)
+        sbom = self._parse_output(result.stdout)
+        root = sbom.get("metadata", {}).get("component", {})
+        project_name = self.context.get("project_name") or VIGILES_DEFAULT_IMAGE
+        root_reference = root.get("bom-ref")
+        root["name"] = project_name
+        root["bom-ref"] = self._root_reference
+        if root_reference and root_reference != self._root_reference:
+            rewrite_references(sbom, {root_reference: self._root_reference})
+        if self.context.get("project_version"):
+            root["version"] = str(self.context["project_version"])
+        return sbom
 
 
 class VigilesGenerator:
