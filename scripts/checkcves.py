@@ -466,6 +466,7 @@ def vigiles_request(vgls_chk):
 
     request = {
         'manifest': manifest_data,
+        'manifest_name': vgls_chk.get('manifest_name', ''),
         'group_token' if is_enterprise else 'product_token': vgls_creds.get('product_or_group', ''),
         'folder_token': vgls_creds.get('folder', ''),
         'subfolder_name': subfolder_name,

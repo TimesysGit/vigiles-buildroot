@@ -342,6 +342,7 @@ def run_check(vgls):
         'keyfile': vgls.get('llkey', ''),
         'dashboard': vgls.get('lldashboard', ''),
         'manifest': vgls.get('manifest', ''),
+        'manifest_name': vgls.get('manifest_name', ''),
         'report': vgls.get('report', ''),
         'kconfig': kconfig_path,
         'uconfig': uconfig_path,
