@@ -178,8 +178,8 @@ def create_component(vgls, package_name, package, additional_pkg=False, bom_ref=
     return component
 
 
-def create_vulnerability(cve, status, component, detail=None):
-    """Create a vulnerability analysis record affecting one component."""
+def create_vulnerability(cve, status, component=None, detail=None):
+    """Create a vulnerability analysis record, optionally component-scoped."""
     states = {
         "patched": "resolved_with_pedigree",
         "ignored": "not_affected",
@@ -191,16 +191,17 @@ def create_vulnerability(cve, status, component, detail=None):
     if detail:
         analysis["detail"] = detail
 
-    target = {"ref": component["bom-ref"]}
-    if component.get("version"):
-        target["versions"] = [{"version": component["version"]}]
-
-    return {
+    vulnerability = {
         "bom-ref": generate_bom_ref(),
         "id": cve,
         "analysis": analysis,
-        "affects": [target],
     }
+    if component:
+        target = {"ref": component["bom-ref"]}
+        if component.get("version"):
+            target["versions"] = [{"version": component["version"]}]
+        vulnerability["affects"] = [target]
+    return vulnerability
 
 
 def _dependency(component, dependencies=None):
@@ -295,7 +296,7 @@ def create_cyclonedx_sbom(vgls):
 
     for cve in _get_user_whitelist(vgls["whtlst"]):
         vulnerabilities.append(
-            create_vulnerability(cve, "ignored", root_component)
+            create_vulnerability(cve, "ignored")
         )
 
     document = {

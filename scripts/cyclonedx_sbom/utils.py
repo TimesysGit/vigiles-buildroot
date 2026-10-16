@@ -17,10 +17,47 @@ import subprocess
 from .constants import (
     CLI_TIMEOUT_SECONDS,
     COMMAND_ERROR_OUTPUT_MAX_CHARS,
+    LEGACY_NOT_AFFECTED_DETAIL,
     REFERENCE_ARRAY_FIELDS,
     SUPPORTED_INPUT_VERSIONS,
 )
 from .errors import CycloneDxCliError, CycloneDxDocumentError
+
+
+def apply_external_whitelist(sbom, vgls):
+    """Mark externally whitelisted CVEs as not affected"""
+    try:
+        from amendments import _get_user_whitelist
+    except ModuleNotFoundError:
+        from scripts.amendments import _get_user_whitelist
+
+    whitelist = _get_user_whitelist(vgls.get("whtlst", ""))
+    if not whitelist:
+        return sbom
+
+    vulnerabilities = sbom.setdefault("vulnerabilities", [])
+    by_id = {}
+    for vulnerability in vulnerabilities:
+        cve = str(vulnerability.get("id", "")).strip().upper()
+        if cve:
+            by_id.setdefault(cve, []).append(vulnerability)
+
+    for cve in sorted(whitelist):
+        matching = by_id.get(cve, [])
+        if not matching:
+            matching = [{
+                "id": cve,
+                "analysis": {"state": "not_affected"},
+            }]
+            vulnerabilities.extend(matching)
+            by_id[cve] = matching
+
+        for vulnerability in matching:
+            analysis = vulnerability.setdefault("analysis", {})
+            analysis["state"] = "not_affected"
+            analysis["detail"] = LEGACY_NOT_AFFECTED_DETAIL
+
+    return sbom
 
 
 def resolve_path(path, base=None):

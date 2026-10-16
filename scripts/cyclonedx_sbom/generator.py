@@ -27,6 +27,7 @@ from .constants import (
 from .errors import CycloneDxGenerationError
 from manifest import VIGILES_DEFAULT_IMAGE
 from .utils import (
+    apply_external_whitelist,
     load_cyclonedx_json,
     run_command,
     convert_sbom,
@@ -274,6 +275,7 @@ def generate_cyclonedx_sbom(vgls, requested_version):
 
     info(f"Using {generator.description}")
     sbom = generator.generate()
+    apply_external_whitelist(sbom, vgls)
 
     if convert:
         cli = resolve_cyclonedx_cli(vgls.get("cyclonedx_cli", ""))

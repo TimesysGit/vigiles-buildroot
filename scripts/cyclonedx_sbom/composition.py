@@ -31,6 +31,7 @@ from .generator import BuildrootGenerator, VigilesGenerator
 from .normalize import normalize_child_sboms
 from .utils import (
     add_dependency,
+    apply_external_whitelist,
     component_identities,
     component_objects,
     convert_sbom,
@@ -443,6 +444,7 @@ def compose_cyclonedx_sboms(vgls):
             child_documents.append(child_document)
 
         merged = _merge_documents(parent, child_documents)
+        apply_external_whitelist(merged, vgls)
         merged_path = work_dir / merged_name
         write_cyclonedx_json(
             merged_path,
