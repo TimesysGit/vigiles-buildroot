@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.26.0] - 2026-10-21
+
+### Added
+
+* feature: Add root element to the SBOM
+* whitelist: Add external whitelist to cyclonedx SBOMs
+
+### Fixed
+
+* manifest upload: Add manifest_name to request body for custom SBOM and report names
+
 ## [v1.25.0] - 2026-09-29
 
 ### Added
