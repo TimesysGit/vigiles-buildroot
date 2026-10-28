@@ -22,11 +22,13 @@ from .constants import (
     BUILDROOT_GENERATOR,
     GENERATION_TIMEOUT_SECONDS,
     GENERATOR_PROBE_TIMEOUT_SECONDS,
+    LEGACY_BOM_AUTHOR,
     SUPPORTED_GENERATION_VERSIONS,
 )
 from .errors import CycloneDxGenerationError
-from manifest import VIGILES_DEFAULT_IMAGE
+from manifest import DEFAULT_SUPPLIER, VIGILES_DEFAULT_IMAGE
 from .utils import (
+    add_missing_timestamp,
     apply_external_whitelist,
     load_cyclonedx_json,
     run_command,
@@ -184,6 +186,51 @@ class BuildrootGenerator:
             )
         return sbom
 
+    def _populate_suppliers(self, sbom):
+        """Supply the package and image suppliers used by the Vigiles writer."""
+        packages = self.context.get("packages", {})
+        packages_by_name = {
+            package.get("name", name): package
+            for name, package in packages.items()
+        }
+
+        def populate(component, package):
+            supplier = component.get("supplier") or {}
+            if not str(supplier.get("name") or "").strip():
+                name = package.get("package-supplier") or DEFAULT_SUPPLIER
+                name = name.replace("Organization:", "").strip()
+                supplier["name"] = name or DEFAULT_SUPPLIER
+                component["supplier"] = supplier
+
+        for component in sbom.get("components", []):
+            package = packages.get(component.get("bom-ref"))
+            if package is None:
+                package = packages_by_name.get(component.get("name"), {})
+            populate(component, package)
+
+        root = sbom.get("metadata", {}).get("component")
+        if root is not None:
+            populate(root, {})
+
+    def _populate_identifiers(self, sbom):
+        """Use available Vigiles CPEs without guessing package identities."""
+        from buildroot import _is_valid_cpe_id
+
+        packages = self.context.get("packages", {})
+        for component in sbom.get("components", []):
+            if component.get("cpe") or component.get("purl"):
+                continue
+            reference = component.get("bom-ref")
+            package = packages.get(reference)
+            if package is None and (not reference or reference == component.get("name")):
+                matches = [item for key, item in packages.items()
+                           if item.get("name", key) == component.get("name")]
+                if len(matches) == 1:
+                    package = matches[0]
+            cpe = (package or {}).get("cpe-id")
+            if isinstance(cpe, str) and _is_valid_cpe_id(cpe):
+                component["cpe"] = cpe
+
     def generate(self):
         """Generate and parse a native Buildroot CycloneDX SBOM."""
         self.validate()
@@ -197,6 +244,23 @@ class BuildrootGenerator:
             input_text=show_info,
         )
         sbom = self._parse_output(result.stdout)
+
+        add_missing_timestamp(sbom, error_type=CycloneDxGenerationError)
+        metadata = sbom.setdefault("metadata", {})
+        if not metadata.get("authors"):
+            metadata["authors"] = [{"name": LEGACY_BOM_AUTHOR}]
+
+        buildroot_version = (
+            self.context.get("make", {})
+            .get("br2", {})
+            .get("meta", {})
+            .get("version")
+        )
+        if buildroot_version:
+            for component in sbom.get("components", []):
+                if not component.get("version"):
+                    component["version"] = str(buildroot_version)
+
         root = sbom.get("metadata", {}).get("component", {})
         project_name = self.context.get("project_name") or VIGILES_DEFAULT_IMAGE
         root_reference = root.get("bom-ref")
@@ -210,6 +274,8 @@ class BuildrootGenerator:
             _add_additional_packages(sbom, self.context)
         if self.context.get("excld"):
             _exclude_packages(sbom, self.context)
+        self._populate_suppliers(sbom)
+        self._populate_identifiers(sbom)
         return sbom
 
 

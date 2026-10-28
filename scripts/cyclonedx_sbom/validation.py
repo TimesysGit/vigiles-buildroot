@@ -8,8 +8,6 @@
 ##########################################################################
 
 from copy import deepcopy
-from datetime import datetime, timezone
-import os
 from pathlib import Path
 import tempfile
 
@@ -25,6 +23,7 @@ from .constants import (
 )
 from .errors import CycloneDxValidationError
 from .utils import (
+    add_missing_timestamp,
     component_identities,
     cyclonedx_version,
     extend_unique,
@@ -300,28 +299,6 @@ def _rebuild_dependency_graph(document, containment_edges):
     document["dependencies"] = rebuilt
 
 
-def _add_missing_timestamp(document):
-    """Add a UTC metadata timestamp, honoring SOURCE_DATE_EPOCH when set."""
-    metadata = document.setdefault("metadata", {})
-    if metadata.get("timestamp"):
-        return
-
-    source_date_epoch = os.environ.get("SOURCE_DATE_EPOCH")
-    try:
-        timestamp = (
-            datetime.fromtimestamp(int(source_date_epoch), timezone.utc)
-            if source_date_epoch is not None
-            else datetime.now(timezone.utc)
-        )
-    except (OverflowError, TypeError, ValueError) as exc:
-        raise CycloneDxValidationError(
-            f"Invalid SOURCE_DATE_EPOCH: {source_date_epoch}"
-        ) from exc
-    metadata["timestamp"] = (
-        timestamp.replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    )
-
-
 def validate_cyclonedx_sbom(vgls, merged_path):
     """Finalize and independently validate a composed CycloneDX 1.6 SBOM."""
     if not merged_path:
@@ -355,7 +332,8 @@ def validate_cyclonedx_sbom(vgls, merged_path):
         for source, target in containment_edges
     ]
     _rebuild_dependency_graph(document, containment_edges)
-    _add_missing_timestamp(document)
+    
+    add_missing_timestamp(document, error_type=CycloneDxValidationError)
     validate_reference_integrity(
         document,
         error_type=CycloneDxValidationError,

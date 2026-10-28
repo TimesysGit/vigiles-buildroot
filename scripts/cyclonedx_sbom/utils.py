@@ -8,6 +8,7 @@
 ##########################################################################
 
 from copy import deepcopy
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,25 @@ from .constants import (
     SUPPORTED_INPUT_VERSIONS,
 )
 from .errors import CycloneDxCliError, CycloneDxDocumentError
+
+
+def add_missing_timestamp(document, error_type=CycloneDxDocumentError):
+    """Add a UTC timestamp, honoring SOURCE_DATE_EPOCH when set."""
+    metadata = document.setdefault("metadata", {})
+    if metadata.get("timestamp"):
+        return
+    source_date_epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    try:
+        timestamp = (
+            datetime.fromtimestamp(int(source_date_epoch), timezone.utc)
+            if source_date_epoch is not None
+            else datetime.now(timezone.utc)
+        )
+    except (OverflowError, OSError, TypeError, ValueError) as exc:
+        raise error_type(f"Invalid SOURCE_DATE_EPOCH: {source_date_epoch}") from exc
+    metadata["timestamp"] = (
+        timestamp.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    )
 
 
 def apply_external_whitelist(sbom, vgls):
