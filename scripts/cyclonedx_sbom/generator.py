@@ -206,6 +206,10 @@ class BuildrootGenerator:
             rewrite_references(sbom, {root_reference: self._root_reference})
         if self.context.get("project_version"):
             root["version"] = str(self.context["project_version"])
+        if self.context.get("addl"):
+            _add_additional_packages(sbom, self.context)
+        if self.context.get("excld"):
+            _exclude_packages(sbom, self.context)
         return sbom
 
 
@@ -315,5 +319,100 @@ def generate_cyclonedx_sbom(vgls, requested_version):
             f"CycloneDX {requested_version} was requested, but "
             f"the selected generator produced {actual_version or 'no version'}"
         )
+
+    return sbom
+
+def _exclude_packages(sbom, context):
+    """Remove packages listed in the CSV and their references from the SBOM"""
+    from amendments import _get_excld_packages
+
+    excluded = set(_get_excld_packages(context["excld"]))
+    components = sbom.get("components", [])
+    removed_refs = set()
+    retained = []
+
+    if not excluded:
+        return sbom
+
+    for component in components:
+        name = str(component.get("name", ""))
+        normalized = name.strip().lower().replace(" ", "-")
+        if normalized in excluded:
+            if component.get("bom-ref"):
+                removed_refs.add(component["bom-ref"])
+        else:
+            retained.append(component)
+    sbom["components"] = retained
+
+    if removed_refs:
+        for dependency in sbom.get("dependencies", []):
+            dependency["dependsOn"] = [
+                ref
+                for ref in dependency.get("dependsOn", [])
+                if ref not in removed_refs
+            ]
+            if not dependency.get("dependsOn"):
+                dependency.pop("dependsOn", None)
+        sbom["dependencies"] = [
+            dependency
+            for dependency in sbom.get("dependencies", [])
+            if dependency.get("ref") not in removed_refs
+        ]
+
+        for vulnerability in sbom.get("vulnerabilities", []):
+            vulnerability["affects"] = [
+                target
+                for target in vulnerability.get("affects", [])
+                if target.get("ref") not in removed_refs
+            ]
+            if not vulnerability.get("affects"):
+                vulnerability.pop("affects", None)
+
+    return sbom
+
+
+def _add_additional_packages(sbom, context):
+    """Add additional packages from the CSV input to the SBOM"""
+    from amendments import _parse_addl_pkg_csv
+    from .cyclonedx_sbom_v1_4 import create_component, generate_bom_ref
+
+    additional_components = []
+    for name, version, license_name, release, eol, support in _parse_addl_pkg_csv(
+        context.get("addl", "")
+    ):
+        name = name.replace(" ", "-")
+        version = version.replace(" ", ".")
+        component = create_component(
+            context,
+            name,
+            {
+                "name": name,
+                "version": version,
+                "license": license_name,
+                "release-date": release,
+                "end-of-life": eol,
+                "level-of-support": support,
+            },
+            additional_pkg=True,
+            bom_ref=generate_bom_ref(),
+        )
+        additional_components.append(component)
+
+    if additional_components:
+        sbom.setdefault("components", []).extend(additional_components)
+        root_ref = sbom.get("metadata", {}).get("component", {}).get("bom-ref")
+        if root_ref:
+            dependencies = sbom.setdefault("dependencies", [])
+            root_dependency = next(
+                (item for item in dependencies if item.get("ref") == root_ref),
+                None,
+            )
+            if root_dependency is None:
+                root_dependency = {"ref": root_ref}
+                dependencies.append(root_dependency)
+
+            refs = set(root_dependency.get("dependsOn", []))
+            refs.update(item["bom-ref"] for item in additional_components)
+            root_dependency["dependsOn"] = sorted(refs)
 
     return sbom
