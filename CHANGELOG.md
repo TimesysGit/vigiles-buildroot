@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.27.0] - 2026-11-10
+
+### Added
+
+* feature: Apply package inclusion and exclusion amendments to native CycloneDX 1.6 SBOMs.
+
+### Changed
+
+* Improve NTIA minimum element compliance in native CycloneDX SBOMs by filling missing component versions, supplier details, valid CPE identifiers, authors, and timestamps.
+
 ## [v1.26.0] - 2026-10-21
 
 ### Added
